@@ -141,22 +141,3 @@ class Repository:
         self.language = language
         self.features = features
 
-    def findRepositoryFromPath(self, path):
-
-
-
-    # Funcao retorna o json da pagina
-    def get_json(url, token):
-        resp = os.popen("curl -H 'Authorization: token " + token + "' " + url).read()
-        return json.loads(resp)
-
-    # Funcao que retorna uma lista com as urls de todos os repo do usuario
-    def get_repo(url, token):
-        repo_urls = []
-
-        data = get_json(url, token)
-
-        for repo in data:
-            repo_urls.append(repo['url'] + '/contents')
-
-        return repo_urls
