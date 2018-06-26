@@ -76,7 +76,7 @@ def get_followers(url,token):
 	data = get_json(url,token)
 
 	for raw in data:
-		ls_follower.append((raw['id'],raw['login']))
+		ls_follower.append((raw['id'],raw['login'], 0))
 	
 	return ls_follower
 
@@ -100,20 +100,19 @@ def all_followers(url, token, pages):
 if __name__ == '__main__':
 
 	# para uso manual no terminal descomente
-	# user = raw_input("User: ")
-	# token = raw_input("Token: ")
-	# ext = raw_input("Extension: ")
+	user = raw_input("User: ")
+	token = raw_input("Token: ")
+	ext = raw_input("Extension: ")
 
 	# usuario inicial para a mineracao
 	# user = "ggpsgeorge"
 	# user = "torvalds"
-	user = "aslakhellesoy"
+	# user = "aslakhellesoy"
 
 	# token de acesso eh necessario para ter autorizacao para uso pleno da api
-	token = "47fccc67711f9f8a59348708ae3edf328750b661"
 
 	# extensao de arquivo a ser buscado nos repo
-	ext = "feature"
+	# ext = "feature"
 
 	# toda url para repositorios eh igual, o que muda eh o usuario, logo 
 	# o nome de um usuario eh necessario para comecar 
@@ -130,7 +129,7 @@ if __name__ == '__main__':
 	# ls_users.sort()
 	# print ls_users
 
-	file = open("sortedlogins.txt","w")
+	file = open("logins.txt","w")
 	for i in ls_users:
 		file.write(str(i) + "\n")
 
