@@ -1,12 +1,10 @@
-# Minerador esta fazendo o download de arquivos de extensao .h(teste) e somente para o primeiro 
-# nivel de arquivos nos repositorios.
+# Minerador esta fazendo o download de arquivos de extensao .h(teste) e somente para o primeiro
+# usario
 # TODO 
-# 	Fazer download em subdiretorios
 # 	Fazer download de mais de um usuario, por enquanto de pessoas que sigam o usuario inicial
 
 
 import os
-import requests
 import sys
 import json
 
@@ -29,7 +27,7 @@ def get_repo(url,token):
 	return repo_urls
 
 
-# Funcao que faz o download dos arquivos com uma extensao especifica
+# Funcao que faz o download dos arquivos em dirs e subdirs com uma extensao especifica
 def download_files(url_list, token, extensao):
 
 	dir_urls = []
@@ -41,7 +39,7 @@ def download_files(url_list, token, extensao):
 		for raw in data:
 
 			if find_ext(raw['name'], extensao):
-				file = open("dados/" + raw['name'],'w+')
+				file = open("dados/" + raw['name'],'w')
 				file.write(os.popen("curl -H 'Authorization: token " + token + "' " 
 					+ raw['download_url']).read())
 				file.close()
@@ -70,25 +68,87 @@ def qtd_requests(url, token):
 	resp = os.popen("curl -i -H 'Authorization: token " + token + "' " + url).read()
 	print resp
 
+# Funcao pega login e id de followers da pagina
+def get_followers(url,token):
+
+	ls_follower = []
+
+	data = get_json(url,token)
+
+	for raw in data:
+		ls_follower.append((raw['id'],raw['login']))
+	
+	return ls_follower
+
+# Funcao pega todos os followers de ate x paginas(pages) de um usuario
+def all_followers(url, token, pages):
+	ls_followers = []
+
+	if pages < 2:
+		ls_followers = get_followers(url, token) + ls_followers
+	else:
+		for i in xrange(1,pages):
+			ls_followers = get_followers(url + "?page=%d" % i, token) + ls_followers
+
+	return ls_followers
+
+			
+
+
+
 ##########################################MAIN###################################################
 if __name__ == '__main__':
 
-	user = raw_input("User: ")
-	token = raw_input("Token: ")
-	ext = raw_input("Extension: ")
+	# para uso manual no terminal descomente
+	# user = raw_input("User: ")
+	# token = raw_input("Token: ")
+	# ext = raw_input("Extension: ")
 
 	# usuario inicial para a mineracao
 	# user = "ggpsgeorge"
+	# user = "torvalds"
+	user = "aslakhellesoy"
 
-	# token de acesso eh necessario para ter autorizacao para uso pleno do api
-	
+	# token de acesso eh necessario para ter autorizacao para uso pleno da api
+	token = "47fccc67711f9f8a59348708ae3edf328750b661"
+
 	# extensao de arquivo a ser buscado nos repo
-	# ext = "h"
+	ext = "feature"
 
 	# toda url para repositorios eh igual, o que muda eh o usuario, logo 
 	# o nome de um usuario eh necessario para comecar 
 	url = "https://api.github.com/users/" + user + "/repos"
- 	
-	download_files(get_repo(url,token), token, ext) 
+
+	# precisa da url de followers e uma quantidade maxima de paginas para buscar em cada
+	# usuarios
+	followers_url = "https://api.github.com/users/" + user + "/followers"
+	qtd_pages = 3
+
+	# download_files(get_repo(url,token), token, ext) 
+	ls_users = all_followers(followers_url, token, qtd_pages)
+
+	# ls_users.sort()
+	# print ls_users
+
+	file = open("sortedlogins.txt","w")
+	for i in ls_users:
+		file.write(str(i) + "\n")
+
+	line_count = 0
+
+	while(line_count < 100):
+
+		for user in ls_users:
+			url = "https://api.github.com/users/" + user[1] + "/repos"
+			download_files(get_repo(url,token), token, ext)
+		
+		followers_url = "https://api.github.com/users/" + file.readline(line_count)[1] + "/followers"	
+		ls_users = all_followers(followers_url, token, qtd_pages)
+
+		for i in ls_users:
+			file.write(str(i) + "\n")
+
+		line_count += 1
+	file.close()
 
 	# qtd_requests("https://api.github.com/users/ggpsgeorge/repos", token)
