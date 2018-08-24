@@ -1,0 +1,6 @@
+setup.py
+minerador.egg-info/PKG-INFO
+minerador.egg-info/SOURCES.txt
+minerador.egg-info/dependency_links.txt
+minerador.egg-info/not-zip-safe
+minerador.egg-info/top_level.txt
