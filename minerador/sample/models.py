@@ -105,7 +105,7 @@ class Method:
     def __str__(self):
         print("METHOD:")
         print("\t name: " + self.method_name)
-        print("\t classe: " + self.class_name)
+        print("\t class: " + self.class_name)
         print("\t path: " + self.class_path)
         return ''
 
@@ -130,3 +130,10 @@ class Repository:
             print(feature)
 
         return ''
+
+    def setRepository(self, path, name, country, language, features):
+        self.path = path
+        self.name = name
+        self.country = ""
+        self.language = ""
+        self.features = []
