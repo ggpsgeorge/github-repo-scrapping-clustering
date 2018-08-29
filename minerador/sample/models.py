@@ -115,6 +115,7 @@ class Repository:
     def __init__(self):
         self.path = ""
         self.name = ""
+        self.owner = ""
         self.country = ""
         self.language = ""
         self.features = []
@@ -123,6 +124,7 @@ class Repository:
         print("REPOSITORY:")
         print("\t path: " + self.path)
         print("\t name: " + self.name)
+        print("\t owner: " + self.owner)
         print("\t country: " + self.country)
         print("\t language: " + self.language)
 
@@ -131,9 +133,30 @@ class Repository:
 
         return ''
 
-    def setRepository(self, path, name, country, language, features):
+    def setRepository(self, path, name, owner, country, language, features):
         self.path = path
         self.name = name
-        self.country = ""
-        self.language = ""
-        self.features = []
+        self.owner = owner
+        self.country = country
+        self.language = language
+        self.features = features
+
+    def findRepositoryFromPath(self, path):
+
+
+
+    # Funcao retorna o json da pagina
+    def get_json(url, token):
+        resp = os.popen("curl -H 'Authorization: token " + token + "' " + url).read()
+        return json.loads(resp)
+
+    # Funcao que retorna uma lista com as urls de todos os repo do usuario
+    def get_repo(url, token):
+        repo_urls = []
+
+        data = get_json(url, token)
+
+        for repo in data:
+            repo_urls.append(repo['url'] + '/contents')
+
+        return repo_urls
