@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-import json
 
 
 class Feature:
@@ -125,8 +124,14 @@ class Repository:
         print("\t path: " + self.path)
         print("\t name: " + self.name)
         print("\t owner: " + self.owner)
-        print("\t country: " + self.country)
-        print("\t language: " + self.language)
+        if (self.country != None):
+            print("\t country: " + self.country)
+        else:
+            print("\t country: None")
+        if(self.language != None):
+            print("\t language: " + self.language)
+        else:
+            print("\t language: None")
 
         for feature in self.features:
             print(feature)
@@ -141,22 +146,3 @@ class Repository:
         self.language = language
         self.features = features
 
-    def findRepositoryFromPath(self, path):
-
-
-
-    # Funcao retorna o json da pagina
-    def get_json(url, token):
-        resp = os.popen("curl -H 'Authorization: token " + token + "' " + url).read()
-        return json.loads(resp)
-
-    # Funcao que retorna uma lista com as urls de todos os repo do usuario
-    def get_repo(url, token):
-        repo_urls = []
-
-        data = get_json(url, token)
-
-        for repo in data:
-            repo_urls.append(repo['url'] + '/contents')
-
-        return repo_urls
