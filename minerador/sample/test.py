@@ -1,8 +1,10 @@
 from view_model import ViewModel
 
 
-token = "31c01cc17db18206df13b1a4f745fc2400d37433"
+token = ""
 path = "https://api.github.com/repos/octocat/Hello-World"
+path2 = "https://api.github.com/repos/ggpsgeorge/minerador"
+path3 = "https://github.com/ggpsgeorge/minerador/tree/kfouri/minerador"
 viewRepository = ViewModel(token)
-repository = viewRepository.getRepositoryFromPath(path)
+repository = viewRepository.getRepositoryFromPath(path3)
 print(repository)
