@@ -82,9 +82,11 @@ class ViewModel():
 
         features = os.listdir(os.getcwd() + os.sep + "dados")
 
-        #for feature in features:
+        repository.features = []
 
-        #self.list_all_features(os.getcwd() + os.sep + "dados")
+        for feature in features:
+            repository.features.append(self.get_feature_information(os.getcwd() + os.sep + "dados" + os.sep + feature))
+            os.remove(os.getcwd() + os.sep + "dados" + os.sep + feature)
 
         return repository
 
@@ -150,8 +152,8 @@ class ViewModel():
         with open(path) as file:
             file.seek(0)
             for line_number, line in enumerate(file, 1):
-                if "Funcionalidade: " in line:
-                    feature_name = line.split("Funcionalidade: ", 1)[1].replace('\n', '')
+                if "Feature: " in line:
+                    feature_name = line.split("Feature: ", 1)[1].replace('\n', '')
         return feature_name
 
     def get_steps(self, lines, initial, final):
@@ -162,7 +164,7 @@ class ViewModel():
         :param final: The last line of this scenario.
         :return: a list of Steps.
         """
-        key_words = ["Quando ", "E ", "Dado ", "Entao "]
+        key_words = ["When ", "And ", "Given ", "Then "]
         steps = []
         index = initial
         if final is not None:
@@ -189,7 +191,7 @@ class ViewModel():
         with open(path) as file:
             file.seek(0)
             lines = file.readlines()
-            scenario.scenario_title = lines[initial_line - 1].split("Cenario: ", 1)[1].replace('\n', '').replace(':',
+            scenario.scenario_title = lines[initial_line - 1].split("Scenario: ", 1)[1].replace('\n', '').replace(':',
                                                                                                                  '')
             scenario.line = initial_line
             scenario.steps = self.get_steps(lines, initial_line + 1, final_line)
@@ -237,7 +239,7 @@ class ViewModel():
         with open(path) as file:
             file.seek(0)
             for line_number, line in enumerate(file, 1):
-                if "Cenario:" in line:
+                if "Scenario:" in line:
                     lines.append(line_number)
 
 
