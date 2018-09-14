@@ -10,6 +10,8 @@ import os
 import sys
 import json
 
+#deprecated
+
 # Funcao retorna o json da pagina
 def get_json(url, token):
 	resp = os.popen("curl -H 'Authorization: token " + token + "' " + url).read()
