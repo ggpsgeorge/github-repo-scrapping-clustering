@@ -117,10 +117,11 @@ if __name__ == '__main__':
 	# user = "BorisOsipov"
 
 	# token de acesso eh necessario para ter autorizacao para uso pleno da api
-	token = "fd3925d2ce1816c55a92f88f922c1ff954e0f163"
+	token = "29697e714959214a9f1681a0aedb94167047b0eb"
 
 	# extensao de arquivo a ser buscado nos repo
 	# ext = "feature"
+
 	# toda url para repositorios eh igual, o que muda eh o usuario, logo 
 	# o nome de um usuario eh necessario para comecar 
 	# url = "https://api.github.com/users/" + user + "/repos"
