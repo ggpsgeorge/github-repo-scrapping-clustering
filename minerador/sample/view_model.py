@@ -18,6 +18,15 @@ class ViewModel():
         resp = os.popen("curl -H 'Authorization: token " + self.token + "' " + url).read()
         return json.loads(resp)
 
+    def get_repo_paths(self, query_url):
+        paths_urls = []
+
+        data = self.get_json(query_url)
+
+        for paths in data['items']:
+            paths_urls.append(paths['url'])
+
+        return paths_urls
 
     # Funcao que retorna uma lista com as urls de todos os repo do usuario
     def get_repo(self, url):
@@ -78,15 +87,15 @@ class ViewModel():
         repository.language = repositoryJson['language']
 
         # now getting the projects features
-        self.download_files(repository.path + '/contents', "feature")
+        # self.download_files(repository.path + '/contents', "feature")
 
-        features = os.listdir(os.getcwd() + os.sep + "dados")
+        # features = os.listdir(os.getcwd() + os.sep + "dados")
 
-        repository.features = []
+        # repository.features = []
 
-        for feature in features:
-            repository.features.append(self.get_feature_information(os.getcwd() + os.sep + "dados" + os.sep + feature))
-            os.remove(os.getcwd() + os.sep + "dados" + os.sep + feature)
+        # for feature in features:
+        #     repository.features.append(self.get_feature_information(os.getcwd() + os.sep + "dados" + os.sep + feature))
+        #     os.remove(os.getcwd() + os.sep + "dados" + os.sep + feature)
 
         return repository
 
