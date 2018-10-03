@@ -2,6 +2,7 @@ from models import Feature, Method, ScenarioOutline, SimpleScenario, Repository
 import json
 import os
 import sys
+import subprocess
 
 
 class ViewModel():
@@ -18,6 +19,8 @@ class ViewModel():
         resp = os.popen("curl -H 'Authorization: token " + self.token + "' " + url).read()
         return json.loads(resp)
 
+
+    # Function get url in items of the json
     def get_repo_paths(self, query_url):
         paths_urls = []
 
@@ -54,7 +57,7 @@ class ViewModel():
             return 0
 
     # Funcao que faz o download dos arquivos em dirs e subdirs com uma extensao especifica
-    def download_files(self, url, extensao):
+    def download_files(self, url, dirname, extensao):
 
         dir_urls = []
 
@@ -63,17 +66,18 @@ class ViewModel():
         for raw in data:
 
             if self.find_ext(raw['name'], extensao):
-                file = open("dados/" + raw['name'], 'w')
-                file.write(os.popen("curl -H 'Authorization: token " + self.token + "' "
+
+                f = open("dados/" + dirname + "/" + raw['name'], 'w')
+                f.write(os.popen("curl -H 'Authorization: token " + self.token + "' "
                                     + raw['download_url']).read())
-                file.close()
+                f.close()
+
             if raw['type'] == "dir":
                 dir_urls.append(raw['url'])
 
         if dir_urls != []:
-            for dir in dir_urls:
-                self.download_files(dir, extensao)
-
+            for dr in dir_urls:
+                self.download_files(dr, dirname, extensao)
 
     # gets an object repository using its url as parameter
     def getRepositoryFromPath(self, path):
@@ -86,9 +90,13 @@ class ViewModel():
         repository.country = ownerJson['location']
         repository.language = repositoryJson['language']
 
-        # now getting the projects features
-        # self.download_files(repository.path + '/contents', "feature")
+        dirname = repository.owner + "_" + repository.name
 
+        os.mkdir("dados/" + dirname)
+
+        # now getting the projects features and saving in dirs
+
+        self.download_files(repository.path + '/contents', dirname, "feature")
         # features = os.listdir(os.getcwd() + os.sep + "dados")
 
         # repository.features = []
