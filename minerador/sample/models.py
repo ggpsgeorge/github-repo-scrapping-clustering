@@ -125,8 +125,14 @@ class Repository:
         print("\t path: " + self.path)
         print("\t name: " + self.name)
         print("\t owner: " + self.owner)
-        print("\t country: " + self.country)
-        print("\t language: " + self.language)
+        if (self.country != None):
+            print("\t country: " + self.country)
+        else:
+            print("\t country: None")
+        if(self.language != None):
+            print("\t language: " + self.language)
+        else:
+            print("\t language: None")
 
         for feature in self.features:
             print(feature)
