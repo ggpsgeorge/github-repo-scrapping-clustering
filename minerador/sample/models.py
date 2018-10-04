@@ -1,8 +1,19 @@
 from abc import ABC, abstractmethod
 import json
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 
 
 class Feature:
+
+    __tablename__ = 'feature'
+
+    id = Column(Integer, primary_key=True)
+    path = Column(String)
+    name = Column(String)
+    language = Column(String)
+    user_story = Column(String)
+    repository_id = Column(Integer, ForeignKey('repository.id'))
 
     def __init__(self):
         self.path_name = ""
@@ -111,6 +122,16 @@ class Method:
 
 
 class Repository:
+
+    __tablename__ = 'repository'
+
+    id = Column(Integer, primary_key=True)
+    path = Column(String)
+    name = Column(String)
+    owner = Column(String)
+    country = Column(String)
+    language = Column(String)
+    features = relationship("Feature", cascade="all, delete-orphan")
 
     def __init__(self):
         self.path = ""

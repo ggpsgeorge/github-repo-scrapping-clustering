@@ -19,9 +19,13 @@ class Repository_test(Base):
     language = Column(String)
     features = relationship("Feature", cascade="all, delete-orphan")
 
-    def __repr__(self):
-        return "<Repository(path='$s', name='%s', owner='%s', country='%s', language='%s')>" % (
-                            self.path, self.name, self.owner, self.country, self.language)
+    def __init__(self, path, name, owner, country, language):
+        self.path = path
+        self.name = name
+        self.owner = owner
+        self.country = country
+        self.language = language
+
 
 class Feature(Base):
 
@@ -34,12 +38,3 @@ class Feature(Base):
     user_story = Column(String)
     repository_id = Column(Integer, ForeignKey('repository.id'))
 
-
-# create an engine
-engine = create_engine('mysql://root:1234@localhost/sqlalchemy', echo=True)
-
-# create a configured "Session" class
-Session = sessionmaker(bind=engine)
-
-# create a Session
-session = Session()
