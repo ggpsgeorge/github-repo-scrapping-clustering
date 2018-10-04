@@ -10,7 +10,6 @@ from models import Repository, Feature
 # 1 - create a new session
 
 engine = create_engine('mysql://root:1234@localhost/foo', echo=True)
-<<<<<<< HEAD
 Session = sessionmaker(bind=engine)
 session = Session()
 

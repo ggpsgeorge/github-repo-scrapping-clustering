@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 import json
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 
+Base = declarative_base()
 
-class Feature:
+class Feature(Base):
 
     __tablename__ = 'feature'
 
@@ -121,7 +123,7 @@ class Method:
         return ''
 
 
-class Repository:
+class Repository(Base):
 
     __tablename__ = 'repository'
 
