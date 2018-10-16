@@ -17,8 +17,14 @@ session = Session()
 declarative_base().metadata.create_all(engine)
 
 # 3 - create repository
+feature1 = Feature()
+feature1.path = "path1"
+feature1.name = "name1"
+features = []
+features.append(feature1)
 repository1 = Repository()
-repository1.setRepository("path", "name", "owner", "country", "language", [])
+repository1.setRepository("path", "name", "owner", "country", "language", 1, features)
+
 
 # 4 - persisting data
 session.add(repository1)

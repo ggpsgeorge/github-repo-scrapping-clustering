@@ -1,6 +1,4 @@
 from view_model import ViewModel
-import os
-import json
 
 
 token = ""
@@ -11,4 +9,3 @@ viewRepository = ViewModel(token)
 repository = viewRepository.getRepositoryFromPath(path3)
 print(repository)
 
-#print(json.dumps(repository.__dict__))
