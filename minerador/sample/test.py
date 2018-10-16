@@ -1,7 +1,3 @@
-#dbconnector = DataBaseConnector()
-#mydb = dbconnector.connect("root", "1234")
-#dbconnector.create_db(mydb, "bdd")
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
