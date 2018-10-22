@@ -1,4 +1,5 @@
 import requests
+import time
 from bs4 import BeautifulSoup
 
 class GitHub():
@@ -14,8 +15,7 @@ class GitHub():
 # Variable that defines the min and max pages in the url
 # to scrap (API only accepts 9 pages per minute)
 
-
-inipage = 1
+inipage = int(input("Ini: "))
 finpage = inipage + 9
 
 #############
@@ -23,20 +23,35 @@ finpage = inipage + 9
 #############
 
 
-f = open("usersReposp" + str(inipage) + "_" + str(finpage-1) + ".txt", "w")
 
-url = "https://github.com/search?o=desc&q=BDD&s=stars&type=Repositories&p="
+while(finpage < 81):
 
-for j in range(inipage, finpage):
-	github = requests.get(url + str(j))
-	soup = BeautifulSoup(github.text, "html.parser")
 
-	all_results = soup.find_all("a", attrs={"class":"v-align-middle"}, href=True)
-	# print(len(all_results))
-	# print(all_results[0])
 
-	for result in all_results:
-		# print(result['href'])
-		f.write(result['href'] + "\n")
+	f = open("usersReposp" + str(inipage) + "_" + str(finpage-1) + ".txt", "w")
 
-f.close()
+	url = "https://github.com/search?o=desc&q=BDD&s=stars&type=Repositories&p="
+
+	for j in range(inipage, finpage):
+		github = requests.get(url + str(j))
+		soup = BeautifulSoup(github.text, "html.parser")
+
+		all_results = soup.find_all("a", attrs={"class":"v-align-middle"}, href=True)
+		# print(len(all_results))
+		# print(all_results[0])
+
+		for result in all_results:
+			# print(result['href'])
+			f.write(result['href'] + "\n")
+
+	f.close()
+
+	print("Ini: %d  Fin: %d\n" % (inipage, finpage))
+
+	time.sleep(120)
+
+	inipage = finpage
+	finpage = inipage + 9
+
+
+
