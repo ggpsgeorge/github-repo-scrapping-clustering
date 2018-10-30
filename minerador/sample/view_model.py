@@ -1,4 +1,4 @@
-from models import Feature, Method, ScenarioOutline, SimpleScenario, Repository
+from models import Feature, SimpleScenario, Repository, Step
 import json
 import os
 import sys
@@ -89,6 +89,7 @@ class ViewModel():
         repository.owner = repositoryJson['owner']['login']
         repository.country = ownerJson['location']
         repository.language = repositoryJson['language']
+        repository.stars = repositoryJson['stargazers_count']
 
         dirname = repository.owner + "_" + repository.name
 
@@ -154,8 +155,8 @@ class ViewModel():
         """
         feature = Feature()
         feature.language = self.get_language(path)
-        feature.path_name = path
-        feature.feature_name = self.get_feature_name(path)
+        feature.path = path
+        feature.name = self.get_feature_name(path)
         feature.scenarios = self.get_scenarios(path)
         # feature = self.get_steps(path, feature)
         return feature
@@ -187,12 +188,16 @@ class ViewModel():
         if final is not None:
             while index <= final:
                 if any(word in lines[index - 1] for word in key_words):
-                    steps.append(lines[index - 1].replace('\n', '').replace('  ', ''))
+                    step = Step()
+                    step.step = lines[index - 1].replace('\n', '').replace('  ', '')
+                    steps.append(step)
                 index += 1
         else:
             while index <= len(lines):
                 if any(word in lines[index - 1] for word in key_words):
-                    steps.append(lines[index - 1].replace('\n', '').replace('  ', ''))
+                    step = Step()
+                    step.step = lines[index - 1].replace('\n', '').replace('  ', '')
+                    steps.append(step)
                 index += 1
         return steps
 
