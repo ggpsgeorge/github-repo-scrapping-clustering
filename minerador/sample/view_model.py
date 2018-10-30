@@ -2,6 +2,7 @@ from models import Feature, SimpleScenario, Repository, Step
 import json
 import os
 import sys
+import subprocess
 
 
 class ViewModel():
@@ -18,6 +19,17 @@ class ViewModel():
         resp = os.popen("curl -H 'Authorization: token " + self.token + "' " + url).read()
         return json.loads(resp)
 
+
+    # Function get url in items of the json
+    def get_repo_paths(self, query_url):
+        paths_urls = []
+
+        data = self.get_json(query_url)
+
+        for paths in data['items']:
+            paths_urls.append(paths['url'])
+
+        return paths_urls
 
     # Funcao que retorna uma lista com as urls de todos os repo do usuario
     def get_repo(self, url):
@@ -45,7 +57,7 @@ class ViewModel():
             return 0
 
     # Funcao que faz o download dos arquivos em dirs e subdirs com uma extensao especifica
-    def download_files(self, url, extensao):
+    def download_files(self, url, dirname, extensao):
 
         dir_urls = []
 
@@ -54,17 +66,18 @@ class ViewModel():
         for raw in data:
 
             if self.find_ext(raw['name'], extensao):
-                file = open("dados/" + raw['name'], 'w')
-                file.write(os.popen("curl -H 'Authorization: token " + self.token + "' "
+
+                f = open("dados/" + dirname + "/" + raw['name'], 'w')
+                f.write(os.popen("curl -H 'Authorization: token " + self.token + "' "
                                     + raw['download_url']).read())
-                file.close()
+                f.close()
+
             if raw['type'] == "dir":
                 dir_urls.append(raw['url'])
 
         if dir_urls != []:
-            for dir in dir_urls:
-                self.download_files(dir, extensao)
-
+            for dr in dir_urls:
+                self.download_files(dr, dirname, extensao)
 
     # gets an object repository using its url as parameter
     def getRepositoryFromPath(self, path):
@@ -78,16 +91,20 @@ class ViewModel():
         repository.language = repositoryJson['language']
         repository.stars = repositoryJson['stargazers_count']
 
-        # now getting the projects features
-        self.download_files(repository.path + '/contents', "feature")
+        dirname = repository.owner + "_" + repository.name
 
-        features = os.listdir(os.getcwd() + os.sep + "dados")
+        os.mkdir("dados/" + dirname)
 
-        repository.features = []
+        # now getting the projects features and saving in dirs
 
-        for feature in features:
-            repository.features.append(self.get_feature_information(os.getcwd() + os.sep + "dados" + os.sep + feature))
-            os.remove(os.getcwd() + os.sep + "dados" + os.sep + feature)
+        self.download_files(repository.path + '/contents', dirname, "feature")
+        # features = os.listdir(os.getcwd() + os.sep + "dados")
+
+        # repository.features = []
+
+        # for feature in features:
+        #     repository.features.append(self.get_feature_information(os.getcwd() + os.sep + "dados" + os.sep + feature))
+        #     os.remove(os.getcwd() + os.sep + "dados" + os.sep + feature)
 
         return repository
 
