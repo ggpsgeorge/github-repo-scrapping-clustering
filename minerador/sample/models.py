@@ -26,7 +26,7 @@ class Repository(Base):
         self.country = ""
         self.language = ""
         self.stars = 0
-        #self.features = []
+        self.features = []
 
     def __str__(self):
         print("REPOSITORY:")

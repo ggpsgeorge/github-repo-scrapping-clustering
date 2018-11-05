@@ -1,8 +1,9 @@
 from models import Feature, SimpleScenario, Repository, Step
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 import json
 import os
-import sys
-import subprocess
 
 
 class ViewModel():
@@ -12,6 +13,15 @@ class ViewModel():
         self.features = []
         self.num_files = 0
         self.num_func = 0
+        try:
+            self.engine = create_engine('mysql://root:1234@localhost/foo', echo=False)
+            Session = sessionmaker(bind=self.engine)
+            session = Session()
+            session.query("1").from_statement("SELECT 1").all()
+            session.close()
+            print("Connected to Data Base")
+        except:
+            print("Not connected do Data base")
 
 
     # Funcao retorna o json da pagina
@@ -107,6 +117,22 @@ class ViewModel():
         #     os.remove(os.getcwd() + os.sep + "dados" + os.sep + feature)
 
         return repository
+
+    def saveRepositoryOnDB(self, repository):
+
+        # create a new session
+
+        session = Session()
+
+        # generate database schema
+        declarative_base().metadata.create_all(self.engine)
+
+        # persisting data
+        session.add(repository)
+
+        # commit and close session
+        session.commit()
+        session.close()
 
     #========================================================
 
