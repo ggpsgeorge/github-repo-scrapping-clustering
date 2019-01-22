@@ -6,7 +6,7 @@ import time
 #############
 # IMPORTANT #
 #############
-token = "439496ca541a6de5a0cf099c5745d666a1ddce31"
+token = ""
 #############
 # IMPORTANT #
 #############
@@ -20,7 +20,6 @@ pathapi = "https://api.github.com/repos"
 
 # arq = str(input("Arquivo com usuarios e repos: "))
 arq = "usersReposptest.txt"
-# arq = "usersReposp1_9.txt"
 
 start_time = time.time()
 
@@ -45,5 +44,5 @@ print(".......%d seconds......" % (time.time() - start_time))
 
 # 4 - saving repositories on BD ===============================================
 
-for repository in ls_repos:
-	viewRepository.saveRepositoryOnDB(repository)
+# for repository in ls_repos:
+# 	viewRepository.saveRepositoryOnDB(repository)
