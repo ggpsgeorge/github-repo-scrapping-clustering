@@ -6,7 +6,7 @@ import time
 #############
 # IMPORTANT #
 #############
-token = "638701cb4b670360a4107fac70666341d841319a"
+token = ""
 #############
 # IMPORTANT #
 #############
@@ -25,8 +25,10 @@ arq = "usersReposptest.txt"
 start_time = time.time()
 
 f = open(arq, "r")
+
 ls_users = f.read().splitlines()
 ls_users.pop()
+
 f.close()
 
 # 3 - searching repositories and saving them on objects ======================
