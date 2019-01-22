@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import json
 import os
+from subprocess import PIPE, Popen
 
 
 class ViewModel():
@@ -26,8 +27,14 @@ class ViewModel():
 
     # Funcao retorna o json da pagina
     def get_json(self, url):
-        resp = os.popen("curl -H 'Authorization: token " + self.token + "' " + url).read()
-        return json.loads(resp)
+        #resp = os.popen("curl -H 'Authorization: token " + self.token + "' " + url).read()
+        resp = Popen("curl -H 'Authorization: token " + self.token + "' " + url, encoding='utf-8', stdout=PIPE, stderr=PIPE)
+        stdout, stdeer = resp.communicate()
+        return json.loads(stdout)
+        #p = os.popen("curl -H 'Authorization: token " + self.token + "' " + url)
+        #for line in p:
+        #    line.encode('UTF-8')
+        #p.read()
 
 
     # Function get url in items of the json
@@ -75,6 +82,9 @@ class ViewModel():
 
         for raw in data:
 
+            print(raw)
+            print("Checking " + raw['name'])
+
             if self.find_ext(raw['name'], extensao):
 
                 f = open("dados/" + dirname + "/" + raw['name'], 'w')
@@ -92,6 +102,7 @@ class ViewModel():
     # gets an object repository using its url as parameter
     def getRepositoryFromPath(self, path):
         repositoryJson = self.get_json(path)
+        print(repositoryJson)
         ownerJson = self.get_json(repositoryJson['owner']['url'])
         repository = Repository()
         repository.path = repositoryJson['url']
@@ -121,7 +132,7 @@ class ViewModel():
     def saveRepositoryOnDB(self, repository):
 
         # create a new session
-
+        Session = sessionmaker(bind=self.engine)
         session = Session()
 
         # generate database schema

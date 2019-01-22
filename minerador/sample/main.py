@@ -6,7 +6,7 @@ import time
 #############
 # IMPORTANT #
 #############
-token = "439496ca541a6de5a0cf099c5745d666a1ddce31"
+token = "638701cb4b670360a4107fac70666341d841319a"
 #############
 # IMPORTANT #
 #############
@@ -31,19 +31,24 @@ f.close()
 
 # 3 - searching repositories and saving them on objects ======================
 
+print("Starting downloading repositories from " + arq)
+
 ls_paths = []
 for user in ls_users:
-	ls_paths.append(pathapi + user)
+    ls_paths.append(pathapi + user)
 
 ls_repos = []
 for path in ls_paths:
-	ls_repos.append(viewRepository.getRepositoryFromPath(path))
+    print("Downloading repository from path: " + path)
+    ls_repos.append(viewRepository.getRepositoryFromPath(path))
 
 print(".......%d seconds......" % (time.time() - start_time))
 
 #print(json.dumps(repository.__dict__))
 
 # 4 - saving repositories on BD ===============================================
+
+print("Starting saving repositories on Data Base")
 
 for repository in ls_repos:
 	viewRepository.saveRepositoryOnDB(repository)

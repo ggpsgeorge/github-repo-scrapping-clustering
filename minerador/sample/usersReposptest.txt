@@ -1,3 +1,4 @@
+/Kfourit/test2
 /mochajs/mocha
 /karma-runner/karma
 /Quick/Quick
