@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import json
 import os
+import subprocess
 from subprocess import PIPE, Popen
 
 
@@ -27,7 +28,7 @@ class ViewModel():
 
     # Funcao retorna o json da pagina
     def get_json(self, url):
-        resp = os.popen("curl -H 'Authorization: token " + self.token + "' " + url).read()
+        resp = subprocess.Popen("curl -H 'Authorization: token " + self.token + "' " + url, stdout=subprocess.PIPE).communicate()[0].decode('u8')
         return json.loads(resp)
 
 
@@ -75,7 +76,7 @@ class ViewModel():
         data = self.get_json(url)
 
         for raw in data:
-            
+
             print("Checking " + raw['name'])
 
             if self.find_ext(raw['name'], extensao):

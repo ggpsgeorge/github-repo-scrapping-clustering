@@ -6,13 +6,15 @@ import time
 #############
 # IMPORTANT #
 #############
-token = ""
+token = "e0fe67b3fcd43ca8be0f0699e6d9da19336af352"
 #############
 # IMPORTANT #
 #############
 
 viewRepository = ViewModel(token)
 
+#viewRepository.download_files("https://api.github.com/repos/mochajs/mocha/tree/master/test/integration/fixtures/suite", "test", "ext")
+#exit(23)
 
 # 2 - opening document with repositories to search ==========================
 
