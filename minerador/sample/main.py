@@ -50,7 +50,7 @@ print(".......%d seconds......" % (time.time() - start_time))
 
 # 4 - saving repositories on BD ===============================================
 
-print("Starting saving repositories on Data Base")
-
-for repository in ls_repos:
-	viewRepository.saveRepositoryOnDB(repository)
+# print("Starting saving repositories on Data Base")
+#
+# for repository in ls_repos:
+# 	viewRepository.saveRepositoryOnDB(repository)

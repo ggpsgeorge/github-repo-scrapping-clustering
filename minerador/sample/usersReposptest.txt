@@ -1,6 +1,5 @@
-/mochajs/mocha
 /karma-runner/karma
+/mochajs/mocha
 /Quick/Quick
 /catchorg/Catch2
 /Kfourit/test2
-
