@@ -197,6 +197,3 @@ class Step(Base):
 #        print("\t class: " + self.class_name)
 #        print("\t path: " + self.class_path)
 #        return ''
-
-
-

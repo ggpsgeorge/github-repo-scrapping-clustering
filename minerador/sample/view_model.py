@@ -5,6 +5,8 @@ from sqlalchemy.ext.declarative import declarative_base
 import json
 import os
 import subprocess
+import requests
+#fda78d73c67855294814abfa3a09f301b3843e87
 from subprocess import PIPE, Popen
 
 
@@ -31,6 +33,9 @@ class ViewModel():
         resp = subprocess.Popen("curl -H 'Authorization: token " + self.token + "' " + url, stdout=subprocess.PIPE).communicate()[0].decode('u8')
         return json.loads(resp)
 
+    def get_json_requests(self, url):
+        resp = requests.get(url, headers={'Authorization': 'token {}'.format(self.token)})
+        return resp.json()
 
     # Function get url in items of the json
     def get_repo_paths(self, query_url):
@@ -73,7 +78,7 @@ class ViewModel():
 
         dir_urls = []
 
-        data = self.get_json(url)
+        data = self.get_json_requests(url)
 
         for raw in data:
 
@@ -81,10 +86,12 @@ class ViewModel():
 
             if self.find_ext(raw['name'], extensao):
 
-                f = open("dados/" + dirname + "/" + raw['name'], 'w')
-                f.write(os.popen("curl -H 'Authorization: token " + self.token + "' "
-                                    + raw['download_url']).read())
-                f.close()
+                # f.write(os.popen("curl -H 'Authorization: token " + self.token + "' "
+                #                     + raw['download_url']).read())
+                print("Downloading " + raw['name'])
+                resp = requests.get(raw['download_url'], allow_redirects=True, headers={'Authorization': 'token {}'.format(self.token)})
+
+                open("dados/" + dirname + "/" + raw['name'], 'wb').write(resp.content)
 
             if raw['type'] == "dir":
                 dir_urls.append(raw['url'])
@@ -95,8 +102,8 @@ class ViewModel():
 
     # gets an object repository using its url as parameter
     def getRepositoryFromPath(self, path):
-        repositoryJson = self.get_json(path)
-        ownerJson = self.get_json(repositoryJson['owner']['url'])
+        repositoryJson = self.get_json_requests(path)
+        ownerJson = self.get_json_requests(repositoryJson['owner']['url'])
         repository = Repository()
         repository.path = repositoryJson['url']
         repository.name = repositoryJson['name']
