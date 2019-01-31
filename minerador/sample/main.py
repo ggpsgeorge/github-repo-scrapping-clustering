@@ -6,7 +6,7 @@ import time
 #############
 # IMPORTANT #
 #############
-token = "e0fe67b3fcd43ca8be0f0699e6d9da19336af352"
+token = "cd0d42e7f03612072138050d154928fd3422d439"
 #############
 # IMPORTANT #
 #############
@@ -52,7 +52,8 @@ print(".......%d seconds......" % (time.time() - start_time))
 
 # 4 - saving repositories on BD ===============================================
 
-# print("Starting saving repositories on Data Base")
-#
-# for repository in ls_repos:
-# 	viewRepository.saveRepositoryOnDB(repository)
+print("Starting saving repositories on Data Base")
+
+for repository in ls_repos:
+    viewRepository.saveRepositoryOnDB(repository)
+

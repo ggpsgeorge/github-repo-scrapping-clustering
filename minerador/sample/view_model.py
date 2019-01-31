@@ -119,13 +119,13 @@ class ViewModel():
         # now getting the projects features and saving in dirs
 
         self.download_files(repository.path + '/contents', dirname, "feature")
-        # features = os.listdir(os.getcwd() + os.sep + "dados")
+        features = os.listdir(os.getcwd() + os.sep + "dados")
 
-        # repository.features = []
+        repository.features = []
 
-        # for feature in features:
-        #     repository.features.append(self.get_feature_information(os.getcwd() + os.sep + "dados" + os.sep + feature))
-        #     os.remove(os.getcwd() + os.sep + "dados" + os.sep + feature)
+        for feature in features:
+            repository.features.append(self.get_feature_information(os.getcwd() + os.sep + "dados" + os.sep + feature))
+            os.remove(os.getcwd() + os.sep + "dados" + os.sep + feature)
 
         return repository
 
