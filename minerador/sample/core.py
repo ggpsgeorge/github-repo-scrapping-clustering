@@ -97,7 +97,7 @@ def all_followers(url, token, ini_page, last_page):
 
 			
 def see_commits(url,token):
-	
+	pass
 
 
 ##########################################MAIN###################################################
@@ -119,7 +119,7 @@ if __name__ == '__main__':
 	# user = "BorisOsipov"
 
 	# token de acesso eh necessario para ter autorizacao para uso pleno da api
-	token = "29697e714959214a9f1681a0aedb94167047b0eb"
+	# token = ""
 
 	# extensao de arquivo a ser buscado nos repo
 	# ext = "feature"

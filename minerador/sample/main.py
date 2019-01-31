@@ -1,30 +1,48 @@
 from view_model import ViewModel
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+import time
 
-# 1 - Getting a repository and putting it into an object
+# 1 - Initialising things ===================================================
 
+#############
+# IMPORTANT #
+#############
 token = ""
-#path = "https://api.github.com/repos/octocat/Hello-World"
-#path2 = "https://api.github.com/repos/ggpsgeorge/minerador"
-path3 = "https://api.github.com/repos/Kfourit/test2"
+#############
+# IMPORTANT #
+#############
+
 viewRepository = ViewModel(token)
-repository = viewRepository.getRepositoryFromPath(path3)
-#print(repository)
 
-# 2 - create a new session
 
-engine = create_engine('mysql://root:1234@localhost/foo', echo=True)
-Session = sessionmaker(bind=engine)
-session = Session()
+# 2 - opening document with repositories to search ==========================
 
-# 3 - generate database schema
-declarative_base().metadata.create_all(engine)
+pathapi = "https://api.github.com/repos"
 
-# 4 - persisting data
-session.add(repository)
+# arq = str(input("Arquivo com usuarios e repos: "))
+arq = "usersReposptest.txt"
 
-# 5 - commit and close session
-session.commit()
-session.close()
+start_time = time.time()
+
+f = open(arq, "r")
+ls_users = f.read().splitlines()
+ls_users.pop()
+f.close()
+
+# 3 - searching repositories and saving them on objects ======================
+
+ls_paths = []
+for user in ls_users:
+	ls_paths.append(pathapi + user)
+
+ls_repos = []
+for path in ls_paths:
+	ls_repos.append(viewRepository.getRepositoryFromPath(path))
+
+print(".......%d seconds......" % (time.time() - start_time))
+
+#print(json.dumps(repository.__dict__))
+
+# 4 - saving repositories on BD ===============================================
+
+# for repository in ls_repos:
+# 	viewRepository.saveRepositoryOnDB(repository)
