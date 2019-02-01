@@ -6,7 +6,7 @@ import time
 #############
 # IMPORTANT #
 #############
-token = ""
+token = "7d1e907b1197c725c4e6d045b37eb3210263aa60"
 #############
 # IMPORTANT #
 #############
@@ -18,8 +18,8 @@ viewRepository = ViewModel(token)
 pathapi = "https://api.github.com/repos"
 
 # arq = str(input("Arquivo com usuarios e repos: "))
-arq = "usersReposptest.txt"
-# arq = "usersReposp1_9.txt"
+# arq = "usersReposptest.txt"
+arq = "usersReposp10_18.txt"
 
 start_time = time.time()
 
@@ -38,19 +38,24 @@ ls_paths = []
 for user in ls_users:
     ls_paths.append(pathapi + user)
 
-ls_repos = []
+problem_paths = []
 for path in ls_paths:
-    print("Downloading repository from path: " + path)
-    ls_repos.append(viewRepository.getRepositoryFromPath(path))
+    try:
+        print("Downloading repository from path: " + path)
+        repository = viewRepository.getRepositoryFromPath(path)
+        print("Saving repository " + path + "on BD")
+        viewRepository.saveRepositoryOnDB(repository)
+    except:
+        problem_paths.append(path)
+        print("There was a problem with the repository from path: " + path)
 
 print(".......%d seconds......" % (time.time() - start_time))
+
+print("These repositories had problems:")
+for path in problem_paths:
+    print(path)
 
 #print(json.dumps(repository.__dict__))
 
 # 4 - saving repositories on BD ===============================================
-
-print("Starting saving repositories on Data Base")
-
-for repository in ls_repos:
-    viewRepository.saveRepositoryOnDB(repository)
 

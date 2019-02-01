@@ -119,13 +119,14 @@ class ViewModel():
         # now getting the projects features and saving in dirs
 
         self.download_files(repository.path + '/contents', dirname, "feature")
-        features = os.listdir(os.getcwd() + os.sep + "dados")
 
+        # now reading the feature file and saving as an object in the repository object
+
+        features = os.listdir(os.getcwd() + os.sep + "dados" + os.sep + dirname)
         repository.features = []
 
         for feature in features:
-            repository.features.append(self.get_feature_information(os.getcwd() + os.sep + "dados" + os.sep + feature))
-            os.remove(os.getcwd() + os.sep + "dados" + os.sep + feature)
+            repository.features.append(self.get_feature_information(os.getcwd() + os.sep + "dados" + os.sep + dirname + os.sep + feature))
 
         return repository
 
@@ -204,7 +205,7 @@ class ViewModel():
         :return: the name of the feature.
         """
         feature_name = ''
-        with open(path) as file:
+        with open(path, mode='r', encoding='UTF8') as file:
             file.seek(0)
             for line_number, line in enumerate(file, 1):
                 if "Feature: " in line:
@@ -247,7 +248,7 @@ class ViewModel():
         :return: A scenario instantiated.
         """
         scenario = SimpleScenario()
-        with open(path) as file:
+        with open(path, mode='r', encoding='UTF8') as file:
             file.seek(0)
             lines = file.readlines()
             scenario.scenario_title = lines[initial_line - 1].split("Scenario: ", 1)[1].replace('\n', '').replace(':',
@@ -281,7 +282,7 @@ class ViewModel():
         :return: language.
         """
         language = ''
-        with open(path) as file:
+        with open(path, mode='r', encoding='UTF8') as file:
             file.seek(0)
             for line_number, line in enumerate(file, 1):
                 if "#language:" in line:
@@ -295,7 +296,7 @@ class ViewModel():
         :return: The lines.
         """
         lines = []
-        with open(path) as file:
+        with open(path, mode='r', encoding='UTF8') as file:
             file.seek(0)
             for line_number, line in enumerate(file, 1):
                 if "Scenario:" in line:
