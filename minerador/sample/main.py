@@ -6,7 +6,7 @@ import time
 #############
 # IMPORTANT #
 #############
-token = "7d1e907b1197c725c4e6d045b37eb3210263aa60"
+token = ""
 #############
 # IMPORTANT #
 #############
@@ -19,7 +19,7 @@ pathapi = "https://api.github.com/repos"
 
 # arq = str(input("Arquivo com usuarios e repos: "))
 # arq = "usersReposptest.txt"
-arq = "usersReposp10_18.txt"
+arq = "usersReposp64_72.txt"
 
 start_time = time.time()
 
