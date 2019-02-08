@@ -1,1 +1,0 @@
-Feature: An empty feature

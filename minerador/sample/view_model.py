@@ -2,6 +2,9 @@ from models import Feature, SimpleScenario, Repository, Step
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import select
+import sqlalchemy as db
+import pandas as pd
 import json
 import os
 import subprocess
@@ -111,6 +114,13 @@ class ViewModel():
         repository.country = ownerJson['location']
         repository.language = repositoryJson['language']
         repository.stars = repositoryJson['stargazers_count']
+        repository.size = repositoryJson['size']
+        repository.created_at = repositoryJson['created_at']
+        repository.updated_at = repositoryJson['updated_at']
+        repository.forks_count = repositoryJson['forks_count']
+        repository.stargazers_count = repositoryJson['stargazers_count']
+        repository.watchers_count = repositoryJson['watchers_count']
+        repository.subscribers_count = repositoryJson['subscribers_count']
 
         dirname = repository.owner + "_" + repository.name
 
@@ -145,6 +155,93 @@ class ViewModel():
         # commit and close session
         session.commit()
         session.close()
+
+    def getReposThatContainFeature(self):
+
+        # setting things
+        connection = self.engine.connect()
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+
+        # SQL
+        query = select([repositorios.c.idrepository.distinct()])
+        query = query.select_from(
+            repositorios.join(features, repositorios.columns.idrepository == features.columns.repository_id))
+        results = connection.execute(query).fetchall()
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        return df
+
+
+    def getNumberOfTotalRepositories(self):
+
+        # setting things
+        connection = self.engine.connect()
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+
+        # SQL
+        query = select([db.func.count(repositorios.columns.idrepository)])
+        result = connection.execute(query).scalar()
+        return result
+
+
+    def getNumberOfReposThatContainFeature(self):
+
+        # setting things
+        connection = self.engine.connect()
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+
+        # SQL
+        query = select([db.func.count(repositorios.c.idrepository.distinct())])
+        query = query.select_from(
+            repositorios.join(features, repositorios.columns.idrepository == features.columns.repository_id))
+        result = connection.execute(query).scalar()
+        return result
+
+    def getNumberOfReposPerLanguages(self):
+
+        # setting things
+        connection = self.engine.connect()
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+
+        #SQL
+        query = select([db.func.count(repositorios.columns.idrepository).label('Number of Repositories'),
+                        repositorios.columns.language])
+        query = query.group_by(repositorios.columns.language)
+        query = query.order_by(db.desc(db.func.count(repositorios.columns.idrepository).label('Number of Repositories')))
+        results = connection.execute(query).fetchall()
+
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        return df
+
+    def getNumberOfReposPerCountry(self):
+
+        # setting things
+        connection = self.engine.connect()
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+
+        # SQL
+        query = select([db.func.count(repositorios.columns.idrepository).label('Number of Repositories'),
+                        repositorios.columns.country])
+        query = query.group_by(repositorios.columns.country)
+        query = query.order_by(
+            db.desc(db.func.count(repositorios.columns.idrepository).label('Number of Repositories')))
+        results = connection.execute(query).fetchall()
+
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        return df
+
 
     #========================================================
 

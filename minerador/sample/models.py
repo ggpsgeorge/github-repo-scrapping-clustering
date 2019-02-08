@@ -17,6 +17,13 @@ class Repository(Base):
     country = Column(String)
     language = Column(String)
     stars = Column(Integer)
+    size = Column(Integer)
+    created_at = Column(String)
+    updated_at = Column(String)
+    forks_count = Column(Integer)
+    stargazers_count = Column(Integer)
+    watchers_count = Column(Integer)
+    subscribers_count = Column(Integer)
     features = relationship("Feature", cascade="all, delete-orphan")
 
     def __init__(self):
@@ -26,6 +33,13 @@ class Repository(Base):
         self.country = ""
         self.language = ""
         self.stars = 0
+        self.size = 0
+        self.created_at = ""
+        self.updated_at = ""
+        self.forks_count = 0
+        self.stargazers_count = 0
+        self.watchers_count = 0
+        self.subscribers_count = 0
         self.features = []
 
     def __str__(self):

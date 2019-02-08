@@ -18,8 +18,8 @@ viewRepository = ViewModel(token)
 pathapi = "https://api.github.com/repos"
 
 # arq = str(input("Arquivo com usuarios e repos: "))
-# arq = "usersReposptest.txt"
-arq = "usersReposp64_72.txt"
+arq = "usersReposptest.txt"
+# arq = "usersReposp64_72.txt"
 
 start_time = time.time()
 
@@ -55,7 +55,4 @@ print("These repositories had problems:")
 for path in problem_paths:
     print(path)
 
-#print(json.dumps(repository.__dict__))
-
-# 4 - saving repositories on BD ===============================================
 
