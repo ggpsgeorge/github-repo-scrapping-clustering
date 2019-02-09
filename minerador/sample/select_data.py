@@ -27,3 +27,11 @@ print(languages)
 
 countries = viewRepository.getNumberOfReposPerCountry()
 print(countries)
+
+scenariosPerRepo = viewRepository.getNumberOfScenariosPerRepo()
+print("Number os Scenarios per Repository:")
+print(scenariosPerRepo)
+
+scenariosPerFeature = viewRepository.getNumberOfScenariosPerFeature()
+print("Number os Scenarios per Feature:")
+print(scenariosPerFeature)

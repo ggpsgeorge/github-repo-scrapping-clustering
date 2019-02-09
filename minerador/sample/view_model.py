@@ -242,6 +242,63 @@ class ViewModel():
         df.head(5)
         return df
 
+    def getNumberOfScenariosPerRepo(self):
+
+        # setting things
+        connection = self.engine.connect()
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+
+        # SELECT
+        query = select([repositorios.columns.name,
+                        db.func.count(repositorios.columns.idrepository).label("Number of Scenarios")])
+
+        # JOIN
+        query = query.select_from(
+            repositorios.join(scenarios.join(features, features.columns.idfeature == scenarios.columns.feature_id),
+                              repositorios.columns.idrepository == features.columns.repository_id))
+
+        # GROUP BY and ORDER BY
+        query = query.group_by(repositorios.columns.idrepository)
+        query = query.order_by(
+            db.desc(db.func.count(repositorios.columns.idrepository).label('Number of Scenarios')))
+
+        # organizing return
+        results = connection.execute(query).fetchall()
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        return df
+
+    def getNumberOfScenariosPerFeature(self):
+
+        # setting things
+        connection = self.engine.connect()
+        metadata = db.MetaData()
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+
+        # SELECT
+        query = select([features.columns.name,
+                        db.func.count(features.columns.idfeature).label("Number of Scenarios")])
+
+        # JOIN
+        query = query.select_from(
+            scenarios.join(features, features.columns.idfeature == scenarios.columns.feature_id))
+
+        # GROUP BY and ORDER BY
+        query = query.group_by(features.columns.idfeature)
+        query = query.order_by(
+            db.desc(db.func.count(features.columns.idfeature).label('Number of Scenarios')))
+
+        # organizing return
+        results = connection.execute(query).fetchall()
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        return df
 
     #========================================================
 
