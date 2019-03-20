@@ -1,5 +1,9 @@
-/karma-runner/karma
-/mochajs/mocha
-/Quick/Quick
-/catchorg/Catch2
-/Kfourit/test2
+/Behat/Behat
+/behave/behave
+/intuit/karate
+/gabrielfalcao/lettuce
+/railsware/Sleipnir
+/pytest-dev/pytest-dbb
+/silverbulleters/vanessa-bdd-editor
+/XCTEQ/XCFit
+/SublimeText/RSpec

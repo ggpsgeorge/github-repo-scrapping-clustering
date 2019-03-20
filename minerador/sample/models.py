@@ -21,7 +21,6 @@ class Repository(Base):
     created_at = Column(String)
     updated_at = Column(String)
     forks_count = Column(Integer)
-    stargazers_count = Column(Integer)
     watchers_count = Column(Integer)
     subscribers_count = Column(Integer)
     features = relationship("Feature", cascade="all, delete-orphan")
@@ -37,7 +36,6 @@ class Repository(Base):
         self.created_at = ""
         self.updated_at = ""
         self.forks_count = 0
-        self.stargazers_count = 0
         self.watchers_count = 0
         self.subscribers_count = 0
         self.features = []
@@ -108,20 +106,20 @@ class Feature(Base):
                           sort_keys=True, indent=4)
 
 
-#class Scenario(ABC):
-#
-#    def __init__(self):
-#        steps = NotImplemented
-#        scenario_title = NotImplemented
-#        line = NotImplemented
-#
-#        @abstractmethod
-#        def execute(self):
-#            pass
-#
-#        @abstractmethod
-#        def set_line(self):
-#            pass
+class Scenario(ABC):
+
+    def __init__(self):
+        steps = NotImplemented
+        scenario_title = NotImplemented
+        line = NotImplemented
+
+        #@abstractmethod
+        #def execute(self):
+        #    pass
+
+        #@abstractmethod
+        #def set_line(self):
+        #    pass
 
 
 class SimpleScenario(Base):
@@ -137,7 +135,7 @@ class SimpleScenario(Base):
     def __init__(self):
         self.steps = []
         self.scenario_title = ""
-        #self.line = None
+        self.line = 0
         #self.executed_methods = []
 
     def execute(self):
@@ -161,26 +159,26 @@ class SimpleScenario(Base):
         return ''
 
 
-#class ScenarioOutline(Scenario):
-#
-#    def __init__(self):
-#        self.steps = []
-#        self.scenario_title = ""
-#        self.line = None
-#        self.examples = []
-#        self.scenario_iterations = []
-#
-#    def execute(self):
-#        pass
-#
-#    def set_line(self):
-#        pass
-#
-#    def add(self):
-#        pass
-#
-#    def remove(self):
-#        pass
+class ScenarioOutline(Scenario):
+
+    def __init__(self):
+        self.steps = []
+        self.scenario_title = ""
+        self.line = None
+        self.examples = []
+        self.scenario_iterations = []
+
+    def execute(self):
+        pass
+
+    def set_line(self):
+        pass
+
+    def add(self):
+        pass
+
+    def remove(self):
+        pass
 
 class Step(Base):
 

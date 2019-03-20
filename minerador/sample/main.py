@@ -18,15 +18,15 @@ viewRepository = ViewModel(token)
 pathapi = "https://api.github.com/repos"
 
 # arq = str(input("Arquivo com usuarios e repos: "))
-arq = "usersReposptest.txt"
-# arq = "usersReposp64_72.txt"
+# arq = "usersReposptest.txt"
+arq = "usersReposp64_72.txt"
 
 start_time = time.time()
 
 f = open(arq, "r")
 
 ls_users = f.read().splitlines()
-ls_users.pop()
+# ls_users.pop()
 
 f.close()
 
@@ -43,7 +43,7 @@ for path in ls_paths:
     try:
         print("Downloading repository from path: " + path)
         repository = viewRepository.getRepositoryFromPath(path)
-        print("Saving repository " + path + "on BD")
+        print("Saving repository " + path + " on BD")
         viewRepository.saveRepositoryOnDB(repository)
     except:
         problem_paths.append(path)

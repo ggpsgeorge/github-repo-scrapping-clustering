@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import select
+import sqlalchemy
 import sqlalchemy as db
 import pandas as pd
 import json
@@ -118,7 +119,6 @@ class ViewModel():
         repository.created_at = repositoryJson['created_at']
         repository.updated_at = repositoryJson['updated_at']
         repository.forks_count = repositoryJson['forks_count']
-        repository.stargazers_count = repositoryJson['stargazers_count']
         repository.watchers_count = repositoryJson['watchers_count']
         repository.subscribers_count = repositoryJson['subscribers_count']
 
@@ -153,8 +153,15 @@ class ViewModel():
         session.add(repository)
 
         # commit and close session
-        session.commit()
+        try:
+            session.commit()
+        except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as e:
+            print(e)
+            session.rollback()
+            raise
+
         session.close()
+
 
     def getReposThatContainFeature(self):
 
@@ -168,6 +175,8 @@ class ViewModel():
         query = select([repositorios.c.idrepository.distinct()])
         query = query.select_from(
             repositorios.join(features, repositorios.columns.idrepository == features.columns.repository_id))
+
+        # organizing return
         results = connection.execute(query).fetchall()
         df = pd.DataFrame(results)
         df.columns = results[0].keys()
@@ -175,7 +184,7 @@ class ViewModel():
         return df
 
 
-    def getNumberOfTotalRepositories(self):
+    def getTotalNumberOfRepositories(self):
 
         # setting things
         connection = self.engine.connect()
@@ -187,19 +196,52 @@ class ViewModel():
         result = connection.execute(query).scalar()
         return result
 
+    def getTotalNumberOfFeatures(self):
+
+        # setting things
+        connection = self.engine.connect()
+        metadata = db.MetaData()
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+
+        # SQL
+        query = select([db.func.count(features.columns.idfeature)])
+        result = connection.execute(query).scalar()
+        return result
+
+    def getTotalNumberOfScenarios(self):
+
+        # setting things
+        connection = self.engine.connect()
+        metadata = db.MetaData()
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+
+        # SQL
+        query = select([db.func.count(scenarios.columns.idscenario)])
+        result = connection.execute(query).scalar()
+        return result
+
+    def getTotalNumberOfSteps(self):
+
+        # setting things
+        connection = self.engine.connect()
+        metadata = db.MetaData()
+        steps = db.Table('step', metadata, autoload=True, autoload_with=self.engine)
+
+        # SQL
+        query = select([db.func.count(steps.columns.idstep)])
+        result = connection.execute(query).scalar()
+        return result
+
 
     def getNumberOfReposThatContainFeature(self):
 
         # setting things
         connection = self.engine.connect()
         metadata = db.MetaData()
-        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
         features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
 
         # SQL
-        query = select([db.func.count(repositorios.c.idrepository.distinct())])
-        query = query.select_from(
-            repositorios.join(features, repositorios.columns.idrepository == features.columns.repository_id))
+        query = select([db.func.count(features.c.repository_id.distinct())])
         result = connection.execute(query).scalar()
         return result
 
@@ -209,14 +251,18 @@ class ViewModel():
         connection = self.engine.connect()
         metadata = db.MetaData()
         repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
 
         #SQL
-        query = select([db.func.count(repositorios.columns.idrepository).label('Number of Repositories'),
+        query = select([db.func.count(repositorios.columns.idrepository.distinct()).label('Number of Repositories'),
                         repositorios.columns.language])
+        query = query.select_from(
+            repositorios.join(features, repositorios.columns.idrepository == features.columns.repository_id))
         query = query.group_by(repositorios.columns.language)
-        query = query.order_by(db.desc(db.func.count(repositorios.columns.idrepository).label('Number of Repositories')))
-        results = connection.execute(query).fetchall()
+        query = query.order_by(db.desc(db.func.count(repositorios.columns.idrepository.distinct())))
 
+        # organizing return
+        results = connection.execute(query).fetchall()
         df = pd.DataFrame(results)
         df.columns = results[0].keys()
         df.head(5)
@@ -228,15 +274,18 @@ class ViewModel():
         connection = self.engine.connect()
         metadata = db.MetaData()
         repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
 
         # SQL
-        query = select([db.func.count(repositorios.columns.idrepository).label('Number of Repositories'),
+        query = select([db.func.count(repositorios.columns.idrepository.distinct()).label('Number of Repositories'),
                         repositorios.columns.country])
+        query = query.select_from(
+            repositorios.join(features, repositorios.columns.idrepository == features.columns.repository_id))
         query = query.group_by(repositorios.columns.country)
-        query = query.order_by(
-            db.desc(db.func.count(repositorios.columns.idrepository).label('Number of Repositories')))
-        results = connection.execute(query).fetchall()
+        query = query.order_by(db.desc(db.func.count(repositorios.columns.idrepository.distinct())))
 
+        # organizing return
+        results = connection.execute(query).fetchall()
         df = pd.DataFrame(results)
         df.columns = results[0].keys()
         df.head(5)
@@ -299,6 +348,197 @@ class ViewModel():
         df.columns = results[0].keys()
         df.head(5)
         return df
+
+    def getAverageNumberOfFeaturesPerRepository(self):
+
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        sums = session.query(db.func.count(repositorios.columns.idrepository).label('a1'))
+        sums = sums.select_from(
+            repositorios.join(features, repositorios.columns.idrepository == features.columns.repository_id))
+        sums = sums.group_by(repositorios.columns.idrepository)
+
+        # query
+        average = session.query(db.func.avg(sums.subquery().columns.a1)).scalar()
+
+        session.close()
+
+        return average
+
+    def getAverageNumberOfScenariosPerRepository(self):
+
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        sums = session.query(db.func.count(repositorios.columns.idrepository).label('a1'))
+        sums = sums.select_from(
+            repositorios.join(scenarios.join(features, features.columns.idfeature == scenarios.columns.feature_id),
+                              repositorios.columns.idrepository == features.columns.repository_id))
+        sums = sums.group_by(repositorios.columns.idrepository)
+
+        # query
+        average = session.query(db.func.avg(sums.subquery().columns.a1)).scalar()
+
+        session.close()
+
+        return average
+
+    def getAverageNumberOfStepsPerRepository(self):
+
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        steps = db.Table('step', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        sums = session.query(db.func.count(repositorios.columns.idrepository).label('a1'))
+
+        # JOIN
+        scenarioJoinStep = steps.join(scenarios, steps.c.scenario_id == scenarios.c.idscenario)
+        featureJoinScenarioJoinStep = features.join(scenarioJoinStep, features.columns.idfeature == scenarios.columns.feature_id)
+        repositoryJoinFeatureJoinScenarioJoinStep = repositorios.join(featureJoinScenarioJoinStep, repositorios.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeatureJoinScenarioJoinStep)
+
+        # GROUP BY
+        sums = sums.group_by(repositorios.columns.idrepository)
+
+        # query
+        average = session.query(db.func.avg(sums.subquery().columns.a1)).scalar()
+
+        session.close()
+
+        return average
+
+    def getAverageNumberOfScenariosPerFeature(self):
+
+        # setting things
+        metadata = db.MetaData()
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        sums = session.query(db.func.count(features.columns.idfeature).label('a1'))
+        sums = sums.select_from(
+            scenarios.join(features, features.columns.idfeature == scenarios.columns.feature_id))
+        sums = sums.group_by(features.columns.idfeature)
+
+        # query
+        average = session.query(db.func.avg(sums.subquery().columns.a1)).scalar()
+
+        session.close()
+
+        return average
+
+    def getAverageNumberOfStepsPerFeature(self):
+
+        # setting things
+        metadata = db.MetaData()
+        steps = db.Table('step', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        sums = session.query(db.func.count(scenarios.columns.idscenario).label('a1'))
+        sums = sums.select_from(
+            features.join(scenarios.join(steps, steps.columns.scenario_id == scenarios.columns.idscenario),
+            features.columns.idfeature == scenarios.columns.feature_id))
+        sums = sums.group_by(features.columns.idfeature)
+
+        # query
+        average = session.query(db.func.avg(sums.subquery().columns.a1)).scalar()
+
+        session.close()
+
+        return average
+
+    def getAverageNumberOfStepsPerScenario(self):
+
+        # setting things
+        metadata = db.MetaData()
+        steps = db.Table('step', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        sums = session.query(db.func.count(scenarios.columns.idscenario).label('a1'))
+        sums = sums.select_from(
+            scenarios.join(steps, steps.columns.scenario_id == scenarios.columns.idscenario))
+        sums = sums.group_by(scenarios.columns.idscenario)
+
+        # query
+        average = session.query(db.func.avg(sums.subquery().columns.a1)).scalar()
+
+        session.close()
+
+        return average
+
+    def getAverageSizeOfRepositories(self):
+
+        # setting things
+        connection = self.engine.connect()
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+
+        query = select([db.func.avg(repositorios.c.size)])
+        result = connection.execute(query).scalar()
+        return result
+
+    def getAverageForksOfRepositories(self):
+
+        # setting things
+        connection = self.engine.connect()
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+
+        query = select([db.func.avg(repositorios.c.forks_count)])
+        result = connection.execute(query).scalar()
+        return result
+
+
+    def getAverageWatchersOfRepositories(self):
+
+        # setting things
+        connection = self.engine.connect()
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+
+        query = select([db.func.avg(repositorios.c.watchers_count)])
+        result = connection.execute(query).scalar()
+        return result
+
+    def getAverageSubscribersOfRepositories(self):
+
+        # setting things
+        connection = self.engine.connect()
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+
+        query = select([db.func.avg(repositorios.c.subscribers_count)])
+        result = connection.execute(query).scalar()
+        return result
+
 
     #========================================================
 
@@ -401,14 +641,22 @@ class ViewModel():
         :param final_line: Last line of this scenario.
         :return: A scenario instantiated.
         """
+
         scenario = SimpleScenario()
         with open(path, mode='r', encoding='UTF8') as file:
             file.seek(0)
             lines = file.readlines()
-            scenario.scenario_title = lines[initial_line - 1].split("Scenario: ", 1)[1].replace('\n', '').replace(':',
+
+            if lines[initial_line - 1].split()[0].count("Scenario:") >= 1:
+                scenario.scenario_title = lines[initial_line - 1].split("Scenario: ", 1)[1].replace('\n', '').replace(':',
                                                                                                                  '')
-            scenario.line = initial_line
-            scenario.steps = self.get_steps(lines, initial_line + 1, final_line)
+                scenario.line = initial_line
+                scenario.steps = self.get_steps(lines, initial_line + 1, final_line)
+            elif lines[initial_line - 1].split().count("Outline:") >= 1:
+                scenario.scenario_title = lines[initial_line - 1].split("Scenario Outline: ", 1)[1].replace('\n', '')
+                scenario.line = initial_line
+                scenario.steps = self.get_steps(lines, initial_line + 1, final_line)
+
         return scenario
 
     def get_scenarios(self, path):
@@ -421,7 +669,7 @@ class ViewModel():
         count = len(lines_scenarios)
 
         for index in range(count):
-            scenario = SimpleScenario()
+            #scenario = SimpleScenario()
             if index + 1 >= count:
                 scenario = self.read_scenario(path, lines_scenarios[index], None)
             else:
@@ -454,6 +702,8 @@ class ViewModel():
             file.seek(0)
             for line_number, line in enumerate(file, 1):
                 if "Scenario:" in line:
+                    lines.append(line_number)
+                elif "Scenario Outline:" in line:
                     lines.append(line_number)
 
 
