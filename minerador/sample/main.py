@@ -1,12 +1,13 @@
 from view_model import ViewModel
 import time
+import os
 
 # 1 - Initialising things ===================================================
 
 #############
 # IMPORTANT #
 #############
-token = ""
+token = "4b3e390cf4b477ad3fcd0995a695d31199175b9f"
 #############
 # IMPORTANT #
 #############
@@ -18,7 +19,7 @@ viewRepository = ViewModel(token)
 pathapi = "https://api.github.com/repos"
 
 # arq = str(input("Arquivo com usuarios e repos: "))
-# arq = "usersReposptest.txt"
+#arq = "usersReposptest.txt"
 arq = "usersReposp64_72.txt"
 
 start_time = time.time()
@@ -52,7 +53,10 @@ for path in ls_paths:
 print(".......%d seconds......" % (time.time() - start_time))
 
 print("These repositories had problems:")
+#f = open(os.mkdir("errors.txt"), "a")
 for path in problem_paths:
     print(path)
+    #f.write(path + "\n")
+#f.close()
 
 

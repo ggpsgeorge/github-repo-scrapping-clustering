@@ -23,6 +23,7 @@ class Repository(Base):
     forks_count = Column(Integer)
     watchers_count = Column(Integer)
     subscribers_count = Column(Integer)
+    email = Column(String)
     features = relationship("Feature", cascade="all, delete-orphan")
 
     def __init__(self):
@@ -38,6 +39,7 @@ class Repository(Base):
         self.forks_count = 0
         self.watchers_count = 0
         self.subscribers_count = 0
+        self.email = ""
         self.features = []
 
     def __str__(self):

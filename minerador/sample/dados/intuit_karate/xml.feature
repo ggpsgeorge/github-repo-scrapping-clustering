@@ -429,3 +429,13 @@ Scenario: attribute embedded expression but empty / null element text
         </S:Body>
     </S:Envelope>
     """
+
+Scenario: repeated xml elements and fuzzy matching
+    since this is tricky, convert to json first
+
+    * json response = <response><foo><bar><msg name="Hello"/><msg name="World"/></bar><bar><msg name="Hello"/><msg name="World"/></bar></foo></response>
+    * json bar = <bar><msg name="Hello"/><msg name="World"/></bar>
+    * match each response.response.foo.bar == bar.bar
+    * match response == { response: { foo: { bar: '#[] bar.bar' } } }
+    # so yes, we can express expected data in xml
+    * match response == <response><foo><bar>#[] bar.bar</bar></foo></response>

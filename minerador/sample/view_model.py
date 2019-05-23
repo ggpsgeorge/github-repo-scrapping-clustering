@@ -121,6 +121,7 @@ class ViewModel():
         repository.forks_count = repositoryJson['forks_count']
         repository.watchers_count = repositoryJson['watchers_count']
         repository.subscribers_count = repositoryJson['subscribers_count']
+        repository.email = ownerJson['email']
 
         dirname = repository.owner + "_" + repository.name
 
@@ -259,7 +260,7 @@ class ViewModel():
         query = query.select_from(
             repositorios.join(features, repositorios.columns.idrepository == features.columns.repository_id))
         query = query.group_by(repositorios.columns.language)
-        query = query.order_by(db.desc(db.func.count(repositorios.columns.idrepository.distinct())))
+        query = query.order_by(db.asc(db.func.count(repositorios.columns.idrepository.distinct())))
 
         # organizing return
         results = connection.execute(query).fetchall()
@@ -282,7 +283,7 @@ class ViewModel():
         query = query.select_from(
             repositorios.join(features, repositorios.columns.idrepository == features.columns.repository_id))
         query = query.group_by(repositorios.columns.country)
-        query = query.order_by(db.desc(db.func.count(repositorios.columns.idrepository.distinct())))
+        query = query.order_by(db.asc(db.func.count(repositorios.columns.idrepository.distinct())))
 
         # organizing return
         results = connection.execute(query).fetchall()
@@ -499,7 +500,6 @@ class ViewModel():
         connection = self.engine.connect()
         metadata = db.MetaData()
         repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
-        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
 
         query = select([db.func.avg(repositorios.c.size)])
         result = connection.execute(query).scalar()
@@ -538,6 +538,56 @@ class ViewModel():
         query = select([db.func.avg(repositorios.c.subscribers_count)])
         result = connection.execute(query).scalar()
         return result
+
+    def getNumberOfReposPerStars(self):
+
+        # setting things
+        connection = self.engine.connect()
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+
+        # SQL
+        #query = select([db.func.count(repositorios.columns.idrepository.distinct()).label('Number of Repositories'),
+        #                repositorios.columns.stars])
+        query = select([repositorios.columns.idrepository.distinct(), repositorios.columns.stars])
+        query = query.select_from(
+            repositorios.join(features, repositorios.columns.idrepository == features.columns.repository_id))
+        #query = query.group_by(repositorios.columns.stars)
+        query = query.order_by(db.asc(repositorios.columns.stars))
+
+        # organizing return
+        results = connection.execute(query).fetchall()
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        return df
+
+
+    def getUsersPath(self):
+
+        # setting things
+        connection = self.engine.connect()
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+
+        # SQL
+        query = select([repositorios.columns.owner])
+
+        # organizing return
+        results = connection.execute(query).fetchall()
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        return df
+
+    def getEmails(self, usersPath):
+        emailList = []
+        for user in usersPath:
+            emailJson = self.get_json_requests(user)
+            print(emailJson)
+            emailList.append(emailJson['payload'])
+        return emailList
 
 
     #========================================================

@@ -49,14 +49,17 @@
 		| 'And In the command interface I select "Основная" "Справочник1"'       | 'Success' |
 		| 'Then "Справочник1" window is opened'                                  | 'Success' |
 		| 'And I click the button named "ФормаСоздать"'                          | 'Success' |
-		| 'Then "Справочник1 (создание)" window is opened'                       | 'Success' |
+		| 'Then "Справочник1 (create)" window is opened'                         | 'Success' |
 		| 'And I input "111" text in the field named "Наименование"'             | 'Success' |
-		| 'And I click "Записать и закрыть" button'                              | 'Success' |
+		| 'And I click "Save and close" button'                                  | 'Success' |
 		| 'Close TestClient'                                                     | 'Success' |
 		| 'And I close TestClient session'                                       | 'Success' |
 
 
 
+
+
 Сценарий: Закрытие служебного сеанса TestEN
 	И я закрываю TestClient "TestEN"
+	И в таблице клиентов тестирования я активизирую строку 'Этот клиент'
 	

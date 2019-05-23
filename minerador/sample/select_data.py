@@ -1,11 +1,13 @@
 from view_model import ViewModel
+import numpy as np
+import matplotlib.pyplot as plt
 
 # 1 - Initialising things ===================================================
 
 #############
 # IMPORTANT #
 #############
-token = ""
+token = "4b3e390cf4b477ad3fcd0995a695d31199175b9f"
 #############
 # IMPORTANT #
 #############
@@ -36,9 +38,18 @@ print(numberOfReposThatContainFeature)
 
 languages = viewRepository.getNumberOfReposPerLanguages()
 print(languages)
+# make the plot
+y_pos = np.arange(len(languages['language']))
+plt.barh(y_pos, languages['Number of Repositories'])
+plt.yticks(y_pos, languages['language'])
+plt.show()
 
 countries = viewRepository.getNumberOfReposPerCountry()
 print(countries)
+y_pos = np.arange(len(countries['country']))
+plt.barh(y_pos, countries['Number of Repositories'])
+plt.yticks(y_pos, countries['country'])
+plt.show()
 
 scenariosPerRepo = viewRepository.getNumberOfScenariosPerRepo()
 print("Number os Scenarios per Repository:")
@@ -89,3 +100,10 @@ print(averageWatchersOfRepositories)
 averageSubscribersOfRepositories = viewRepository.getAverageSubscribersOfRepositories()
 print("Average Number of Subscribers per Repositories:")
 print(averageSubscribersOfRepositories)
+
+stars = viewRepository.getNumberOfReposPerStars()
+print(stars)
+plt.hist(stars['stars'], bins=1000, edgecolor='black', linewidth=1.0)
+plt.xlabel("Number of Stars")
+plt.ylabel("Number of Repositories")
+plt.show()
