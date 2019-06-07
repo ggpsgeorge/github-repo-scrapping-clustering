@@ -7,7 +7,7 @@ import os
 #############
 # IMPORTANT #
 #############
-token = "4b3e390cf4b477ad3fcd0995a695d31199175b9f"
+token = ""
 #############
 # IMPORTANT #
 #############

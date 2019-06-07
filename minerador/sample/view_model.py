@@ -563,31 +563,76 @@ class ViewModel():
         df.head(5)
         return df
 
-
-    def getUsersPath(self):
-
+    def get100ReposMostPopular_StepsPerScenario(self):
         # setting things
-        connection = self.engine.connect()
         metadata = db.MetaData()
         repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        steps = db.Table('step', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
 
-        # SQL
-        query = select([repositorios.columns.owner])
+        # subquery dos 100 mais famosos
+        famososQuery = session.query(repositorios).order_by(repositorios.columns.stars.desc()).limit(100).subquery()
 
-        # organizing return
-        results = connection.execute(query).fetchall()
+        # query principal
+        sums = session.query(scenarios.columns.idscenario.label("idscenario"), db.func.count(steps.columns.idstep).label("Number of Steps"))
+
+        # JOIN
+        scenarioJoinStep = steps.join(scenarios, steps.c.scenario_id == scenarios.c.idscenario)
+        featureJoinScenarioJoinStep = features.join(scenarioJoinStep,
+                                                    features.columns.idfeature == scenarios.columns.feature_id)
+        repositoryJoinFeatureJoinScenarioJoinStep = famososQuery.join(featureJoinScenarioJoinStep,
+                                                                      famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeatureJoinScenarioJoinStep)
+
+        # GROUP BY
+        sums = sums.group_by(scenarios.columns.idscenario)
+
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
         df = pd.DataFrame(results)
         df.columns = results[0].keys()
         df.head(5)
+        session.close()
         return df
 
-    def getEmails(self, usersPath):
-        emailList = []
-        for user in usersPath:
-            emailJson = self.get_json_requests(user)
-            print(emailJson)
-            emailList.append(emailJson['payload'])
-        return emailList
+    def get100ReposMostPopular_ScenarioPerFeature(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        sums = session.query(db.func.count(scenarios.columns.idscenario).label('a1'))
+
+        # JOIN
+        sums = sums.select_from(
+            features.join(features,
+                          features.columns.idfeature == scenarios.columns.feature_id))
+        sums = sums.group_by(features.columns.idfeature)
+
+        # GROUP BY
+        sums = sums.group_by(repositorios.columns.idrepository)
+
+        # ORDER BY
+        sums = sums.order_by(repositorios.columns.stars.desc())
+
+        # query
+        results = session.query(sums.subquery().columns.a1).limit(100).all()
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
 
 
     #========================================================
