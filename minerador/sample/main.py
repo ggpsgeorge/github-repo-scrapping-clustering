@@ -43,9 +43,11 @@ problem_paths = []
 for path in ls_paths:
     try:
         print("Downloading repository from path: " + path)
+        exit(1)
         repository = viewRepository.getRepositoryFromPath(path)
         print("Saving repository " + path + " on BD")
-        viewRepository.saveRepositoryOnDB(repository)
+        if repository.features != None:
+            viewRepository.saveRepositoryOnDB(repository)
     except:
         problem_paths.append(path)
         print("There was a problem with the repository from path: " + path)

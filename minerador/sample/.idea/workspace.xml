@@ -47,34 +47,34 @@
           <entry key="project.closed" value="3" />
           <entry key="project.open.time.11" value="2" />
           <entry key="project.open.time.12" value="4" />
-          <entry key="project.open.time.13" value="3" />
+          <entry key="project.open.time.13" value="4" />
           <entry key="project.open.time.14" value="2" />
           <entry key="project.open.time.15" value="3" />
           <entry key="project.open.time.16" value="1" />
-          <entry key="project.opened" value="15" />
+          <entry key="project.opened" value="16" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="10155" />
+          <entry key="py" value="13400" />
           <entry key="txt" value="45" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="PLAIN_TEXT" value="45" />
-          <entry key="Python" value="10155" />
+          <entry key="Python" value="13400" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
           <entry key="py" value="18" />
-          <entry key="txt" value="5" />
+          <entry key="txt" value="7" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="PLAIN_TEXT" value="5" />
+          <entry key="PLAIN_TEXT" value="7" />
           <entry key="Python" value="18" />
         </counts>
       </usages-collector>
@@ -85,23 +85,24 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/view_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="390">
-              <caret line="597" column="34" selection-start-line="597" selection-start-column="34" selection-end-line="597" selection-end-column="34" />
+            <state relative-caret-position="2441">
+              <caret line="1310" column="15" selection-start-line="1310" selection-start-column="15" selection-end-line="1310" selection-end-column="15" />
               <folding>
                 <element signature="e#0#60#0" expanded="true" />
-                <marker date="1559875268495" expanded="true" signature="6686:7815" ph="..." />
-                <marker date="1559875268495" expanded="true" signature="11607:24136" ph="..." />
-                <marker date="1559875268495" expanded="true" signature="18538:24136" ph="..." />
+                <marker date="1561193869177" expanded="true" signature="6757:7886" ph="..." />
+                <marker date="1561193869177" expanded="true" signature="11678:61110" ph="..." />
+                <marker date="1561193869177" expanded="true" signature="18609:61110" ph="..." />
+                <marker date="1561193869177" expanded="true" signature="24646:25980" ph="..." />
+                <marker date="1561193869177" expanded="true" signature="57504:61110" ph="..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="272">
-              <caret line="16" lean-forward="true" selection-start-line="16" selection-end-line="16" />
+            <state>
               <folding>
                 <element signature="e#0#32#0" expanded="true" />
               </folding>
@@ -112,8 +113,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/select_data.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1231">
-              <caret line="15" column="18" lean-forward="true" selection-start-line="15" selection-start-column="18" selection-end-line="15" selection-end-column="18" />
+            <state relative-caret-position="2295">
+              <caret line="135" column="10" selection-start-line="135" selection-start-column="10" selection-end-line="135" selection-end-column="10" />
               <folding>
                 <element signature="e#0#32#0" expanded="true" />
               </folding>
@@ -121,23 +122,14 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="102">
+            <state relative-caret-position="153">
               <caret line="9" column="9" selection-start-line="9" selection-start-column="9" selection-end-line="9" selection-end-column="9" />
               <folding>
                 <element signature="e#0#32#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/usersReposptest.txt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret column="12" selection-start-column="12" selection-end-column="12" />
             </state>
           </provider>
         </entry>
@@ -154,11 +146,11 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="697">
-              <caret line="41" column="22" selection-start-line="41" selection-start-column="22" selection-end-line="41" selection-end-column="22" />
+            <state relative-caret-position="1037">
+              <caret line="61" column="14" selection-start-line="61" selection-start-column="14" selection-end-line="61" selection-end-column="14" />
               <folding>
                 <element signature="e#0#35#0" expanded="true" />
-                <marker date="1558317466867" expanded="true" signature="4206:4208" ph="..." />
+                <marker date="1559978482983" expanded="true" signature="4364:4366" ph="..." />
               </folding>
             </state>
           </provider>
@@ -202,12 +194,12 @@
         <option value="$PROJECT_DIR$/qtd_requests.py" />
         <option value="$PROJECT_DIR$/usersReposptest.txt" />
         <option value="$PROJECT_DIR$/dados/get_emails.py" />
-        <option value="$PROJECT_DIR$/models.py" />
         <option value="$PROJECT_DIR$/errors.txt" />
-        <option value="$PROJECT_DIR$/main.py" />
+        <option value="$PROJECT_DIR$/models.py" />
+        <option value="$PROJECT_DIR$/test.py" />
         <option value="$PROJECT_DIR$/view_model.py" />
         <option value="$PROJECT_DIR$/select_data.py" />
-        <option value="$PROJECT_DIR$/test.py" />
+        <option value="$PROJECT_DIR$/main.py" />
       </list>
     </option>
   </component>
@@ -223,6 +215,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -234,7 +227,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -370,10 +362,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.select_data" />
+        <item itemvalue="Python.test" />
         <item itemvalue="Python.main" />
         <item itemvalue="Python.get_emails" />
         <item itemvalue="Python.qtd_requests" />
-        <item itemvalue="Python.test" />
       </list>
     </recent_temporary>
   </component>
@@ -477,13 +469,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/dados/get_emails.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="16" column="66" selection-start-line="16" selection-start-column="66" selection-end-line="16" selection-end-column="66" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/dados/get_emails.py" />
     <entry file="file://$PROJECT_DIR$/errors.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
@@ -491,10 +477,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/qtd_requests.py">
+    <entry file="file://$PROJECT_DIR$/usersReposp1_9.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="14" column="9" selection-start-line="14" selection-start-column="9" selection-end-line="14" selection-end-column="9" />
+        <state>
+          <caret selection-end-column="14" />
         </state>
       </provider>
     </entry>
@@ -505,44 +491,25 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="9" column="9" selection-start-line="9" selection-start-column="9" selection-end-line="9" selection-end-column="9" />
-          <folding>
-            <element signature="e#0#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="697">
-          <caret line="41" column="22" selection-start-line="41" selection-start-column="22" selection-end-line="41" selection-end-column="22" />
-          <folding>
-            <element signature="e#0#35#0" expanded="true" />
-            <marker date="1558317466867" expanded="true" signature="4206:4208" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/view_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="597" column="34" selection-start-line="597" selection-start-column="34" selection-end-line="597" selection-end-column="34" />
+        <state relative-caret-position="2441">
+          <caret line="1310" column="15" selection-start-line="1310" selection-start-column="15" selection-end-line="1310" selection-end-column="15" />
           <folding>
             <element signature="e#0#60#0" expanded="true" />
-            <marker date="1559875268495" expanded="true" signature="6686:7815" ph="..." />
-            <marker date="1559875268495" expanded="true" signature="11607:24136" ph="..." />
-            <marker date="1559875268495" expanded="true" signature="18538:24136" ph="..." />
+            <marker date="1561193869177" expanded="true" signature="6757:7886" ph="..." />
+            <marker date="1561193869177" expanded="true" signature="11678:61110" ph="..." />
+            <marker date="1561193869177" expanded="true" signature="18609:61110" ph="..." />
+            <marker date="1561193869177" expanded="true" signature="24646:25980" ph="..." />
+            <marker date="1561193869177" expanded="true" signature="57504:61110" ph="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/select_data.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1231">
-          <caret line="15" column="18" lean-forward="true" selection-start-line="15" selection-start-column="18" selection-end-line="15" selection-end-column="18" />
+        <state relative-caret-position="2295">
+          <caret line="135" column="10" selection-start-line="135" selection-start-column="10" selection-end-line="135" selection-end-column="10" />
           <folding>
             <element signature="e#0#32#0" expanded="true" />
           </folding>
@@ -551,8 +518,35 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="16" lean-forward="true" selection-start-line="16" selection-end-line="16" />
+        <state>
+          <folding>
+            <element signature="e#0#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/qtd_requests.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="187">
+          <caret line="14" column="9" selection-start-line="14" selection-start-column="9" selection-end-line="14" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1037">
+          <caret line="61" column="14" selection-start-line="61" selection-start-column="14" selection-end-line="61" selection-end-column="14" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+            <marker date="1559978482983" expanded="true" signature="4364:4366" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="9" column="9" selection-start-line="9" selection-start-column="9" selection-end-line="9" selection-end-column="9" />
           <folding>
             <element signature="e#0#32#0" expanded="true" />
           </folding>

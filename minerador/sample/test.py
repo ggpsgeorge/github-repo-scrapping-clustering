@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 #############
 # IMPORTANT #
 #############
-token = "aa37de43ba874f4a9d9ec793506379bd28bcfd49"
+token = ""
 #############
 # IMPORTANT #
 #############
@@ -14,3 +14,5 @@ token = "aa37de43ba874f4a9d9ec793506379bd28bcfd49"
 viewRepository = ViewModel(token)
 
 # 2 - Getting data
+
+viewRepository.getReposAsObject()

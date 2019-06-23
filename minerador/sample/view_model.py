@@ -10,7 +10,7 @@ import json
 import os
 import subprocess
 import requests
-#fda78d73c67855294814abfa3a09f301b3843e87
+from datetime import datetime
 from subprocess import PIPE, Popen
 
 
@@ -22,7 +22,7 @@ class ViewModel():
         self.num_files = 0
         self.num_func = 0
         try:
-            self.engine = create_engine('mysql://root:1234@localhost/foo', echo=False)
+            self.engine = create_engine('mysql://root:1234@localhost/foo2', echo=False)
             Session = sessionmaker(bind=self.engine)
             session = Session()
             session.query("1").from_statement("SELECT 1").all()
@@ -116,8 +116,8 @@ class ViewModel():
         repository.language = repositoryJson['language']
         repository.stars = repositoryJson['stargazers_count']
         repository.size = repositoryJson['size']
-        repository.created_at = repositoryJson['created_at']
-        repository.updated_at = repositoryJson['updated_at']
+        repository.created_at = datetime.strptime(repositoryJson['created_at'], '%Y-%m-%dT%H:%M:%SZ')
+        repository.updated_at = datetime.strptime(repositoryJson['updated_at'], '%Y-%m-%dT%H:%M:%SZ')
         repository.forks_count = repositoryJson['forks_count']
         repository.watchers_count = repositoryJson['watchers_count']
         repository.subscribers_count = repositoryJson['subscribers_count']
@@ -590,7 +590,6 @@ class ViewModel():
         # GROUP BY
         sums = sums.group_by(scenarios.columns.idscenario)
 
-
         # SELECT
         results = sums.all()
 
@@ -610,29 +609,899 @@ class ViewModel():
         Session = sessionmaker(bind=self.engine)
         session = Session()
 
-        # subquery
-        sums = session.query(db.func.count(scenarios.columns.idscenario).label('a1'))
+        # subquery dos 100 mais famosos
+        famososQuery = session.query(repositorios).order_by(repositorios.columns.stars.desc()).limit(100).subquery()
+
+        # query principal
+        sums = session.query(features.columns.idfeature.label("idfeature"),
+                             db.func.count(scenarios.columns.idscenario).label("Number of Scenarios"))
 
         # JOIN
-        sums = sums.select_from(
-            features.join(features,
-                          features.columns.idfeature == scenarios.columns.feature_id))
-        sums = sums.group_by(features.columns.idfeature)
+        featureJoinScenario = features.join(scenarios,
+                                                    features.columns.idfeature == scenarios.columns.feature_id)
+        repositoryJoinFeatureJoinScenario = famososQuery.join(featureJoinScenario,
+                                                                      famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeatureJoinScenario)
 
         # GROUP BY
-        sums = sums.group_by(repositorios.columns.idrepository)
+        sums = sums.group_by(features.columns.idfeature)
 
-        # ORDER BY
-        sums = sums.order_by(repositorios.columns.stars.desc())
+        # SELECT
+        results = sums.all()
 
-        # query
-        results = session.query(sums.subquery().columns.a1).limit(100).all()
+        # Pandas organization
         df = pd.DataFrame(results)
         df.columns = results[0].keys()
         df.head(5)
         session.close()
         return df
 
+    def get100ReposMostPopular_FeaturePerSize(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery dos 100 mais famosos
+        famososQuery = session.query(repositorios).order_by(repositorios.columns.stars.desc()).limit(100).subquery()
+
+        # query principal
+        sums = session.query(famososQuery.columns.size.label("size"),
+                             db.func.count(features.columns.idfeature).label("Number of Features"))
+
+        # JOIN
+        repositoryJoinFeature = famososQuery.join(features,
+                                                famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeature)
+
+        # GROUP BY
+        sums = sums.group_by(famososQuery.columns.size.label("size"))
+
+        # ORDER BY
+        sums = sums.order_by(famososQuery.columns.size.label("size").desc())
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+
+    def get100ReposMostPopular_Languages(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery dos 100 mais famosos
+        famososQuery = session.query(repositorios).order_by(repositorios.columns.stars.desc()).limit(100).subquery()
+
+        # query principal
+        sums = session.query(famososQuery.columns.language.label("language"),
+                             db.func.count(famososQuery.columns.idrepository).label("Number of Repositories"))
+
+        # GROUP BY
+        sums = sums.group_by(famososQuery.columns.language)
+
+        # ORDER BY
+        sums = sums.order_by(db.asc(db.func.count(famososQuery.columns.idrepository.distinct())))
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def get100ReposMostForks_StepsPerScenario(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        steps = db.Table('step', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery dos 100 mais forks
+        famososQuery = session.query(repositorios).order_by(repositorios.columns.forks_count.desc()).limit(100).subquery()
+
+        # query principal
+        sums = session.query(scenarios.columns.idscenario.label("idscenario"), db.func.count(steps.columns.idstep).label("Number of Steps"))
+
+        # JOIN
+        scenarioJoinStep = steps.join(scenarios, steps.c.scenario_id == scenarios.c.idscenario)
+        featureJoinScenarioJoinStep = features.join(scenarioJoinStep,
+                                                    features.columns.idfeature == scenarios.columns.feature_id)
+        repositoryJoinFeatureJoinScenarioJoinStep = famososQuery.join(featureJoinScenarioJoinStep,
+                                                                      famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeatureJoinScenarioJoinStep)
+
+        # GROUP BY
+        sums = sums.group_by(scenarios.columns.idscenario)
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def get100ReposMostForks_ScenarioPerFeature(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery dos 100 mais forks
+        famososQuery = session.query(repositorios).order_by(repositorios.columns.forks_count.desc()).limit(100).subquery()
+
+        # query principal
+        sums = session.query(features.columns.idfeature.label("idfeature"),
+                             db.func.count(scenarios.columns.idscenario).label("Number of Scenarios"))
+
+        # JOIN
+        featureJoinScenario = features.join(scenarios,
+                                                    features.columns.idfeature == scenarios.columns.feature_id)
+        repositoryJoinFeatureJoinScenario = famososQuery.join(featureJoinScenario,
+                                                                      famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeatureJoinScenario)
+
+        # GROUP BY
+        sums = sums.group_by(features.columns.idfeature)
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def get100ReposMostForks_FeaturePerSize(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery dos 100 mais famosos
+        famososQuery = session.query(repositorios).order_by(repositorios.columns.forks_count.desc()).limit(100).subquery()
+
+        # query principal
+        sums = session.query(famososQuery.columns.size.label("size"),
+                             db.func.count(features.columns.idfeature).label("Number of Features"))
+
+        # JOIN
+        repositoryJoinFeature = famososQuery.join(features,
+                                                famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeature)
+
+        # GROUP BY
+        sums = sums.group_by(famososQuery.columns.size.label("size"))
+
+        # ORDER BY
+        sums = sums.order_by(famososQuery.columns.size.label("size").desc())
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def get100ReposMostForks_Languages(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery dos 100 mais forks
+        famososQuery = session.query(repositorios).order_by(repositorios.columns.forks_count.desc()).limit(100).subquery()
+
+        # query principal
+        sums = session.query(famososQuery.columns.language.label("language"),
+                             db.func.count(famososQuery.columns.idrepository).label("Number of Repositories"))
+
+        # GROUP BY
+        sums = sums.group_by(famososQuery.columns.language)
+
+        # ORDER BY
+        sums = sums.order_by(db.asc(db.func.count(famososQuery.columns.idrepository.distinct())))
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def get100ReposMostRecent_StepsPerScenario(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        steps = db.Table('step', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery dos 100 mais recentes
+        famososQuery = session.query(repositorios).order_by(repositorios.columns.updated_at.desc()).limit(100).subquery()
+
+        # query principal
+        sums = session.query(scenarios.columns.idscenario.label("idscenario"), db.func.count(steps.columns.idstep).label("Number of Steps"))
+
+        # JOIN
+        scenarioJoinStep = steps.join(scenarios, steps.c.scenario_id == scenarios.c.idscenario)
+        featureJoinScenarioJoinStep = features.join(scenarioJoinStep,
+                                                    features.columns.idfeature == scenarios.columns.feature_id)
+        repositoryJoinFeatureJoinScenarioJoinStep = famososQuery.join(featureJoinScenarioJoinStep,
+                                                                      famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeatureJoinScenarioJoinStep)
+
+        # GROUP BY
+        sums = sums.group_by(scenarios.columns.idscenario)
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def get100ReposMostRecent_ScenarioPerFeature(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery dos 100 mais recentes
+        famososQuery = session.query(repositorios).order_by(repositorios.columns.updated_at.desc()).limit(100).subquery()
+
+        # query principal
+        sums = session.query(features.columns.idfeature.label("idfeature"),
+                             db.func.count(scenarios.columns.idscenario).label("Number of Scenarios"))
+
+        # JOIN
+        featureJoinScenario = features.join(scenarios,
+                                                    features.columns.idfeature == scenarios.columns.feature_id)
+        repositoryJoinFeatureJoinScenario = famososQuery.join(featureJoinScenario,
+                                                                      famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeatureJoinScenario)
+
+        # GROUP BY
+        sums = sums.group_by(features.columns.idfeature)
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def get100ReposMostRecent_FeaturePerSize(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery dos 100 mais famosos
+        famososQuery = session.query(repositorios).order_by(repositorios.columns.updated_at.desc()).limit(100).subquery()
+
+        # query principal
+        sums = session.query(famososQuery.columns.size.label("size"),
+                             db.func.count(features.columns.idfeature).label("Number of Features"))
+
+        # JOIN
+        repositoryJoinFeature = famososQuery.join(features,
+                                                famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeature)
+
+        # GROUP BY
+        sums = sums.group_by(famososQuery.columns.size.label("size"))
+
+        # ORDER BY
+        sums = sums.order_by(famososQuery.columns.size.label("size").desc())
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def get100ReposMostRecent_Languages(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery dos 100 mais recentes
+        famososQuery = session.query(repositorios).order_by(repositorios.columns.updated_at.desc()).limit(100).subquery()
+
+        # query principal
+        sums = session.query(famososQuery.columns.language.label("language"),
+                             db.func.count(famososQuery.columns.idrepository).label("Number of Repositories"))
+
+        # GROUP BY
+        sums = sums.group_by(famososQuery.columns.language)
+
+        # ORDER BY
+        sums = sums.order_by(db.asc(db.func.count(famososQuery.columns.idrepository.distinct())))
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def getJavaRepos_StepsPerScenario(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        steps = db.Table('step', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        famososQuery = session.query(repositorios).filter(repositorios.columns.language == "Java").subquery()
+
+        # query principal
+        sums = session.query(scenarios.columns.idscenario.label("idscenario"), db.func.count(steps.columns.idstep).label("Number of Steps"))
+
+        # JOIN
+        scenarioJoinStep = steps.join(scenarios, steps.c.scenario_id == scenarios.c.idscenario)
+        featureJoinScenarioJoinStep = features.join(scenarioJoinStep,
+                                                    features.columns.idfeature == scenarios.columns.feature_id)
+        repositoryJoinFeatureJoinScenarioJoinStep = famososQuery.join(featureJoinScenarioJoinStep,
+                                                                      famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeatureJoinScenarioJoinStep)
+
+        # GROUP BY
+        sums = sums.group_by(scenarios.columns.idscenario)
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def getJavaRepos_ScenarioPerFeature(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        famososQuery = session.query(repositorios).filter(repositorios.columns.language == "Java").subquery()
+
+        # query principal
+        sums = session.query(features.columns.idfeature.label("idfeature"),
+                             db.func.count(scenarios.columns.idscenario).label("Number of Scenarios"))
+
+        # JOIN
+        featureJoinScenario = features.join(scenarios,
+                                                    features.columns.idfeature == scenarios.columns.feature_id)
+        repositoryJoinFeatureJoinScenario = famososQuery.join(featureJoinScenario,
+                                                                      famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeatureJoinScenario)
+
+        # GROUP BY
+        sums = sums.group_by(features.columns.idfeature)
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def getJavaRepos_FeaturePerSize(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        famososQuery = session.query(repositorios).filter(repositorios.columns.language == "Java").subquery()
+
+        # query principal
+        sums = session.query(famososQuery.columns.size.label("size"),
+                             db.func.count(features.columns.idfeature).label("Number of Features"))
+
+        # JOIN
+        repositoryJoinFeature = famososQuery.join(features,
+                                                famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeature)
+
+        # GROUP BY
+        sums = sums.group_by(famososQuery.columns.size.label("size"))
+
+        # ORDER BY
+        sums = sums.order_by(famososQuery.columns.size.label("size").desc())
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def getJavaScriptRepos_StepsPerScenario(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        steps = db.Table('step', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        famososQuery = session.query(repositorios).filter(repositorios.columns.language == "JavaScript").subquery()
+
+        # query principal
+        sums = session.query(scenarios.columns.idscenario.label("idscenario"), db.func.count(steps.columns.idstep).label("Number of Steps"))
+
+        # JOIN
+        scenarioJoinStep = steps.join(scenarios, steps.c.scenario_id == scenarios.c.idscenario)
+        featureJoinScenarioJoinStep = features.join(scenarioJoinStep,
+                                                    features.columns.idfeature == scenarios.columns.feature_id)
+        repositoryJoinFeatureJoinScenarioJoinStep = famososQuery.join(featureJoinScenarioJoinStep,
+                                                                      famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeatureJoinScenarioJoinStep)
+
+        # GROUP BY
+        sums = sums.group_by(scenarios.columns.idscenario)
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def getJavaScriptRepos_ScenarioPerFeature(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        famososQuery = session.query(repositorios).filter(repositorios.columns.language == "JavaScript").subquery()
+
+        # query principal
+        sums = session.query(features.columns.idfeature.label("idfeature"),
+                             db.func.count(scenarios.columns.idscenario).label("Number of Scenarios"))
+
+        # JOIN
+        featureJoinScenario = features.join(scenarios,
+                                                    features.columns.idfeature == scenarios.columns.feature_id)
+        repositoryJoinFeatureJoinScenario = famososQuery.join(featureJoinScenario,
+                                                                      famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeatureJoinScenario)
+
+        # GROUP BY
+        sums = sums.group_by(features.columns.idfeature)
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def getJavaScriptRepos_FeaturePerSize(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        famososQuery = session.query(repositorios).filter(repositorios.columns.language == "JavaScript").subquery()
+
+        # query principal
+        sums = session.query(famososQuery.columns.size.label("size"),
+                             db.func.count(features.columns.idfeature).label("Number of Features"))
+
+        # JOIN
+        repositoryJoinFeature = famososQuery.join(features,
+                                                famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeature)
+
+        # GROUP BY
+        sums = sums.group_by(famososQuery.columns.size.label("size"))
+
+        # ORDER BY
+        sums = sums.order_by(famososQuery.columns.size.label("size").desc())
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def getPythonRepos_StepsPerScenario(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        steps = db.Table('step', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        famososQuery = session.query(repositorios).filter(repositorios.columns.language == "Python").subquery()
+
+        # query principal
+        sums = session.query(scenarios.columns.idscenario.label("idscenario"), db.func.count(steps.columns.idstep).label("Number of Steps"))
+
+        # JOIN
+        scenarioJoinStep = steps.join(scenarios, steps.c.scenario_id == scenarios.c.idscenario)
+        featureJoinScenarioJoinStep = features.join(scenarioJoinStep,
+                                                    features.columns.idfeature == scenarios.columns.feature_id)
+        repositoryJoinFeatureJoinScenarioJoinStep = famososQuery.join(featureJoinScenarioJoinStep,
+                                                                      famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeatureJoinScenarioJoinStep)
+
+        # GROUP BY
+        sums = sums.group_by(scenarios.columns.idscenario)
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def getPythonRepos_ScenarioPerFeature(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        famososQuery = session.query(repositorios).filter(repositorios.columns.language == "Python").subquery()
+
+        # query principal
+        sums = session.query(features.columns.idfeature.label("idfeature"),
+                             db.func.count(scenarios.columns.idscenario).label("Number of Scenarios"))
+
+        # JOIN
+        featureJoinScenario = features.join(scenarios,
+                                                    features.columns.idfeature == scenarios.columns.feature_id)
+        repositoryJoinFeatureJoinScenario = famososQuery.join(featureJoinScenario,
+                                                                      famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeatureJoinScenario)
+
+        # GROUP BY
+        sums = sums.group_by(features.columns.idfeature)
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def getPythonRepos_FeaturePerSize(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        famososQuery = session.query(repositorios).filter(repositorios.columns.language == "Python").subquery()
+
+        # query principal
+        sums = session.query(famososQuery.columns.size.label("size"),
+                             db.func.count(features.columns.idfeature).label("Number of Features"))
+
+        # JOIN
+        repositoryJoinFeature = famososQuery.join(features,
+                                                famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeature)
+
+        # GROUP BY
+        sums = sums.group_by(famososQuery.columns.size.label("size"))
+
+        # ORDER BY
+        sums = sums.order_by(famososQuery.columns.size.label("size").desc())
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def getRubyRepos_StepsPerScenario(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        steps = db.Table('step', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        famososQuery = session.query(repositorios).filter(repositorios.columns.language == "Ruby").subquery()
+
+        # query principal
+        sums = session.query(scenarios.columns.idscenario.label("idscenario"), db.func.count(steps.columns.idstep).label("Number of Steps"))
+
+        # JOIN
+        scenarioJoinStep = steps.join(scenarios, steps.c.scenario_id == scenarios.c.idscenario)
+        featureJoinScenarioJoinStep = features.join(scenarioJoinStep,
+                                                    features.columns.idfeature == scenarios.columns.feature_id)
+        repositoryJoinFeatureJoinScenarioJoinStep = famososQuery.join(featureJoinScenarioJoinStep,
+                                                                      famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeatureJoinScenarioJoinStep)
+
+        # GROUP BY
+        sums = sums.group_by(scenarios.columns.idscenario)
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def getRubyRepos_ScenarioPerFeature(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        famososQuery = session.query(repositorios).filter(repositorios.columns.language == "Ruby").subquery()
+
+        # query principal
+        sums = session.query(features.columns.idfeature.label("idfeature"),
+                             db.func.count(scenarios.columns.idscenario).label("Number of Scenarios"))
+
+        # JOIN
+        featureJoinScenario = features.join(scenarios,
+                                                    features.columns.idfeature == scenarios.columns.feature_id)
+        repositoryJoinFeatureJoinScenario = famososQuery.join(featureJoinScenario,
+                                                                      famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeatureJoinScenario)
+
+        # GROUP BY
+        sums = sums.group_by(features.columns.idfeature)
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+    def getRubyRepos_FeaturePerSize(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # subquery
+        famososQuery = session.query(repositorios).filter(repositorios.columns.language == "Ruby").subquery()
+
+        # query principal
+        sums = session.query(famososQuery.columns.size.label("size"),
+                             db.func.count(features.columns.idfeature).label("Number of Features"))
+
+        # JOIN
+        repositoryJoinFeature = famososQuery.join(features,
+                                                famososQuery.columns.idrepository == features.columns.repository_id)
+        sums = sums.select_from(repositoryJoinFeature)
+
+        # GROUP BY
+        sums = sums.group_by(famososQuery.columns.size.label("size"))
+
+        # ORDER BY
+        sums = sums.order_by(famososQuery.columns.size.label("size").desc())
+
+        # SELECT
+        results = sums.all()
+
+        # Pandas organization
+        df = pd.DataFrame(results)
+        df.columns = results[0].keys()
+        df.head(5)
+        session.close()
+        return df
+
+
+
+    # Name wrong. This method was used once to migrate the database. Don't use it.
+    def getReposAsObject(self):
+        # setting things
+        metadata = db.MetaData()
+        repositorios = db.Table('repository', metadata, autoload=True, autoload_with=self.engine)
+        features = db.Table('feature', metadata, autoload=True, autoload_with=self.engine)
+        scenarios = db.Table('scenario', metadata, autoload=True, autoload_with=self.engine)
+        steps = db.Table('step', metadata, autoload=True, autoload_with=self.engine)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        result = session.query(repositorios).all()
+
+        repositories = []
+
+        for repositoryResult in result:
+            repository = Repository()
+            repository.idrepository = repositoryResult[0]
+            repository.path = repositoryResult[1]
+            repository.name = repositoryResult[2]
+            repository.owner = repositoryResult[3]
+            repository.country = repositoryResult[4]
+            repository.language = repositoryResult[5]
+            repository.stars = repositoryResult[6]
+            repository.size = repositoryResult[7]
+            repository.created_at = datetime.strptime(repositoryResult[8], '%Y-%m-%dT%H:%M:%SZ')
+            repository.updated_at = datetime.strptime(repositoryResult[9], '%Y-%m-%dT%H:%M:%SZ')
+            repository.forks_count = repositoryResult[10]
+            repository.watchers_count = repositoryResult[11]
+            repository.subscribers_count = repositoryResult[12]
+            repository.email = repositoryResult[13]
+            repository.features = []
+
+            result = session.query(features).filter(features.columns.repository_id == repository.idrepository).all()
+            for featureResult in result:
+                feature = Feature()
+                feature.idfeature = featureResult[0]
+                feature.path = featureResult[1]
+                feature.name = featureResult[2]
+                feature.language = featureResult[3]
+                feature.scenarios = []
+
+                result = session.query(scenarios).filter(scenarios.columns.feature_id == feature.idfeature).all()
+                for scenarioResult in result:
+                    scenario = SimpleScenario()
+                    scenario.idscenario = scenarioResult[0]
+                    scenario.scenario_title = scenarioResult[1]
+                    scenario.line = scenarioResult[2]
+
+                    result = session.query(steps).filter(steps.columns.scenario_id == scenario.idscenario).all()
+                    for stepResult in result:
+                        step = Step()
+                        step.idstep = stepResult[0]
+                        step.step = stepResult[1]
+                        step.scenario_id = stepResult[2]
+
+                        scenario.steps.append(step)
+                    feature.scenarios.append(scenario)
+                repository.features.append(feature)
+            repositories.append(repository)
+
+        # saving on foo2
+        self.engine = create_engine('mysql://root:1234@localhost/foo2', echo=False)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        # generate database schema
+        declarative_base().metadata.create_all(self.engine)
+        for repository in repositories:
+
+
+            # persisting data
+            session.add(repository)
+
+            # commit and close session
+            try:
+                session.commit()
+            except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as e:
+                print(e)
+                session.rollback()
+                raise
+
+        session.close()
 
 
     #========================================================

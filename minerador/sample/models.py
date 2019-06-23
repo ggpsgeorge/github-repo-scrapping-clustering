@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import json
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
@@ -18,8 +18,8 @@ class Repository(Base):
     language = Column(String)
     stars = Column(Integer)
     size = Column(Integer)
-    created_at = Column(String)
-    updated_at = Column(String)
+    created_at = Column(DateTime)
+    updated_at = Column(DateTime)
     forks_count = Column(Integer)
     watchers_count = Column(Integer)
     subscribers_count = Column(Integer)
@@ -56,6 +56,10 @@ class Repository(Base):
         else:
             print("\t language: None")
         print("\t stars: " + self.stars.__str__())
+        print("\t created_at: ", end="")
+        print(self.created_at)
+        print("\t updated_at: ", end="")
+        print(self.updated_at)
 
         for feature in self.features:
             print(feature)
